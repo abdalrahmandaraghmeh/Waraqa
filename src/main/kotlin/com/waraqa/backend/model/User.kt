@@ -1,4 +1,4 @@
-package com.waraqa.model
+package com.waraqa.backend.model
 
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Column

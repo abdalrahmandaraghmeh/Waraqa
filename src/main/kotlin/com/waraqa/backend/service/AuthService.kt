@@ -1,9 +1,11 @@
 package com.waraqa.backend.service
+
 import com.waraqa.backend.dto.AuthResponse
 import com.waraqa.backend.dto.LoginRequest
 import com.waraqa.backend.dto.RegisterRequest
 import com.waraqa.backend.repository.UserRepository
 import com.waraqa.backend.security.JwtUtils
+import com.waraqa.backend.model.User
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 
@@ -20,7 +22,20 @@ class AuthService(
 ) {
 
     fun register(request: RegisterRequest) {
-        // Add registration logic
+        if (userRepository.existsByEmail(request.email)) {
+            throw RegistrationException("email", "Email is already in use")
+        }
+
+        val encodedPassword = passwordEncoder.encode(request.password)
+
+        val user = User(
+            name = request.name,
+            email = request.email,
+            phoneNumber = request.phoneNumber,
+            password = encodedPassword!!
+        )
+
+        userRepository.save(user)
     }
 
     fun login(request: LoginRequest): AuthResponse {

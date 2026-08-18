@@ -22,12 +22,12 @@ class SecurityConfig(
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http
             .csrf { it.disable() }
-            .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authorizeHttpRequests { auth ->
-                auth
-                    .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register").permitAll()
-                    .requestMatchers("/api/auth/**", "/api/auth/login").permitAll()
+                auth.requestMatchers("/api/auth/**").permitAll()
                     .anyRequest().authenticated()
+            }
+            .sessionManagement { session ->
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             }
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
 
