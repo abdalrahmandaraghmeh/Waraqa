@@ -2,12 +2,12 @@ package com.waraqa.backend.controller
 
 import com.waraqa.backend.dto.RegisterRequest
 import com.waraqa.backend.service.AuthService
+import com.waraqa.backend.service.RegistrationException
+import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.MethodArgumentNotValidException
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/auth")
@@ -17,13 +17,60 @@ class AuthController(
 
     @PostMapping("/register")
     fun register(
-        @RequestBody request: RegisterRequest
-    ): ResponseEntity<Map<String, String>> {
+        @Valid @RequestBody request: RegisterRequest
+    ): ResponseEntity<Map<String, Any>> {
 
-        authService.register(request)
+        return try {
+
+            authService.register(request)
+
+            ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(
+                    mapOf(
+                        "success" to true,
+                        "message" to "Registration successful"
+                    )
+                )
+
+        } catch (e: RegistrationException) {
+
+            ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(
+                    mapOf(
+                        "success" to false,
+                        "errors" to mapOf(
+                            e.field to e.message
+                        )
+                    )
+                )
+        }
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException::class)
+    fun handleValidationErrors(
+        ex: MethodArgumentNotValidException
+    ): ResponseEntity<Map<String, Any>> {
+
+        val errors = ex.bindingResult.fieldErrors.associate { error ->
+
+            val fieldName = when (error.field) {
+                "name" -> "full_name"
+                "phoneNumber" -> "phone_number"
+                else -> error.field
+            }
+
+            fieldName to (error.defaultMessage ?: "Invalid value")
+        }
 
         return ResponseEntity
-            .status(HttpStatus.CREATED)
-            .body(mapOf("message" to "Registration successful"))
+            .status(HttpStatus.BAD_REQUEST)
+            .body(
+                mapOf(
+                    "success" to false,
+                    "errors" to errors
+                )
+            )
     }
 }
