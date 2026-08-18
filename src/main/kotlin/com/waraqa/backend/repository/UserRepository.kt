@@ -1,4 +1,4 @@
-package com.waraqa.repository
+package com.waraga.backend.repository
 
 import com.waraqa.model.User
 import org.springframework.data.repository.CrudRepository
