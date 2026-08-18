@@ -1,8 +1,7 @@
 package com.waraqa.backend.service
-
+import com.waraqa.backend.repository.UserRepository
 import com.waraqa.backend.dto.AuthResponse
 import com.waraqa.backend.dto.LoginRequest
-import com.waraga.backend.repository.UserRepository
 import com.waraqa.backend.security.JwtUtils
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service

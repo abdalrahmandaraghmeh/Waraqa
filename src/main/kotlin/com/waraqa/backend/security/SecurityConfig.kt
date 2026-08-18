@@ -25,8 +25,8 @@ class SecurityConfig(
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authorizeHttpRequests { auth ->
                 auth
-                    .requestMatchers("/api/auth/**").permitAll()
-                    .requestMatchers(HttpMethod.GET, "/api/books").permitAll()
+                    .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register").permitAll()
+                    .requestMatchers("/api/auth/**", "/api/auth/login").permitAll()
                     .anyRequest().authenticated()
             }
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)

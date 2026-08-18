@@ -1,5 +1,4 @@
 package com.waraqa.backend.controller
-
 import com.waraqa.backend.dto.AuthResponse
 import com.waraqa.backend.dto.LoginRequest
 import com.waraqa.backend.service.AuthService
