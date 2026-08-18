@@ -21,7 +21,7 @@ class AuthService(
     private val jwtUtils: JwtUtils
 ) {
 
-    fun register(request: RegisterRequest) {
+        fun register(request: RegisterRequest) {
         if (userRepository.existsByEmail(request.email)) {
             throw RegistrationException("email", "Email is already in use")
         }
