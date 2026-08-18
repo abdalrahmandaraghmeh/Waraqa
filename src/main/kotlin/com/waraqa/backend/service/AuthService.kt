@@ -6,6 +6,11 @@ import com.waraqa.repository.UserRepository
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 
+class RegistrationException(
+    val field: String,
+    override val message: String
+) : RuntimeException(message)
+
 @Service
 class AuthService(
     private val userRepository: UserRepository,
@@ -15,15 +20,22 @@ class AuthService(
     fun register(request: RegisterRequest): User {
 
         if (userRepository.existsByEmail(request.email)) {
-            throw IllegalArgumentException("Email already exists")
+            throw RegistrationException(
+                field = "email",
+                message = "Email is already registered"
+            )
         }
 
         if (userRepository.existsByPhoneNumber(request.phoneNumber)) {
-            throw IllegalArgumentException("Phone number already exists")
+            throw RegistrationException(
+                field = "phone_number",
+                message = "Phone number is already registered"
+            )
         }
 
         val hashedPassword = passwordEncoder.encode(request.password)
             ?: throw IllegalStateException("Failed to encode password")
+
         val user = User(
             name = request.name,
             email = request.email,
