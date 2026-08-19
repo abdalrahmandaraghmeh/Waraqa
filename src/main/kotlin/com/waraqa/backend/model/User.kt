@@ -14,9 +14,5 @@ data class User(
     val email: String,
     @Column("phone_number")
     val phoneNumber: String,
-    val password: String,
-    @Column("otp_code")
-    val otpCode: String? = null,
-    @Column("otp_expiry")
-    val otpExpiry: LocalDateTime? = null
+    val password: String
 )
