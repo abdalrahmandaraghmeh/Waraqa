@@ -1,6 +1,5 @@
-package com.waraqa.repository
-
-import com.waraqa.model.User
+package com.waraqa.backend.repository
+import com.waraqa.backend.model.User
 import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Repository
 import java.util.Optional

@@ -1,6 +1,4 @@
 package com.waraqa.backend.controller
-
-import com.waraqa.backend.dto.RegisterRequest
 import com.waraqa.backend.service.AuthService
 import com.waraqa.backend.service.RegistrationException
 import jakarta.validation.Valid
@@ -8,6 +6,9 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.*
+import com.waraqa.backend.dto.RegisterRequest
+import com.waraqa.backend.dto.LoginRequest
+import com.waraqa.backend.dto.AuthResponse
 
 @RestController
 @RequestMapping("/api/auth")
@@ -72,5 +73,10 @@ class AuthController(
                     "errors" to errors
                 )
             )
+    } // <-- Added missing closing brace here!
+
+    @PostMapping("/login")
+    fun login(@RequestBody request: LoginRequest): AuthResponse {
+        return authService.login(request)
     }
 }
