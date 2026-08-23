@@ -4,4 +4,15 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR(255) UNIQUE NOT NULL,
     phone_number VARCHAR(50) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL
-    );
+);
+
+CREATE TABLE IF NOT EXISTS books (
+    id BIGSERIAL PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    author VARCHAR(255) NOT NULL,
+    price DECIMAL(10, 2) NOT NULL,
+    published_at TIMESTAMP NOT NULL,
+    cover_image VARCHAR(500),
+    user_id BIGINT NOT NULL,
+    CONSTRAINT fk_books_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
