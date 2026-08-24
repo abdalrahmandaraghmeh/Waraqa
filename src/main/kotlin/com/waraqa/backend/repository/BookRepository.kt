@@ -96,6 +96,15 @@ class BookRepository(private val jdbcTemplate: NamedParameterJdbcTemplate) {
         return jdbcTemplate.query(sql, params, rowMapper)
     }
 
+    fun findAllByUserId(userId: Long): List<Book> {
+        return findByPublisherId(userId)
+    }
+
+    fun findAll(): List<Book> {
+        val sql = "SELECT * FROM books"
+        return jdbcTemplate.query(sql, MapSqlParameterSource(), rowMapper)
+    }
+
     fun findBooks(
         search: String?,
         category: String?,
@@ -165,4 +174,3 @@ class BookRepository(private val jdbcTemplate: NamedParameterJdbcTemplate) {
         return jdbcTemplate.query(sql, params, rowMapper)
     }
 }
-
