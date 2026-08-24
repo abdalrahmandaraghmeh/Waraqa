@@ -28,7 +28,7 @@ class BookRepositoryTest @Autowired constructor(
             password = "SecurePassword123"
         )
         val savedUser = userRepository.save(user)
-        assertNotNull(savedUser.userId)
+        val publisherId = savedUser.userId ?: throw AssertionError("User ID must not be null")
 
         // Create and save book referencing the user
         val book = Book(
@@ -37,7 +37,8 @@ class BookRepositoryTest @Autowired constructor(
             price = BigDecimal("39.99"),
             publishedAt = LocalDateTime.now(),
             coverImage = "https://example.com/cover.jpg",
-            userId = savedUser.userId!!
+            category = "academic",
+            publisherId = publisherId
         )
         val savedBook = bookRepository.save(book)
         assertNotNull(savedBook.id)
@@ -50,11 +51,12 @@ class BookRepositoryTest @Autowired constructor(
         assertEquals("Kotlin in Action", retrievedBook.title)
         assertEquals("Dmitry Jemerov", retrievedBook.author)
         assertEquals(0, retrievedBook.price.compareTo(BigDecimal("39.99")))
-        assertEquals(savedUser.userId, retrievedBook.userId)
+        assertEquals(publisherId, retrievedBook.publisherId)
+        assertEquals("academic", retrievedBook.category)
     }
 
     @Test
-    fun `should find books by userId`() {
+    fun `should find books by publisherId`() {
         // Create and save user
         val user = User(
             name = "Test Author",
@@ -63,6 +65,7 @@ class BookRepositoryTest @Autowired constructor(
             password = "Password123"
         )
         val savedUser = userRepository.save(user)
+        val publisherId = savedUser.userId ?: throw AssertionError("User ID must not be null")
 
         // Create and save multiple books for this user
         val book1 = Book(
@@ -70,22 +73,27 @@ class BookRepositoryTest @Autowired constructor(
             author = "Test Author",
             price = BigDecimal("19.99"),
             publishedAt = LocalDateTime.now(),
-            userId = savedUser.userId!!
+            category = "academic",
+            publisherId = publisherId
         )
         val book2 = Book(
             title = "Book 2",
             author = "Test Author",
             price = BigDecimal("29.99"),
             publishedAt = LocalDateTime.now(),
-            userId = savedUser.userId!!
+            category = "general",
+            publisherId = publisherId
         )
         bookRepository.save(book1)
         bookRepository.save(book2)
 
-        // Retrieve books by userId
-        val books = bookRepository.findByUserId(savedUser.userId!!)
+        // Retrieve books by publisherId
+        val books = bookRepository.findByPublisherId(publisherId)
         assertEquals(2, books.size)
         assertEquals(true, books.any { it.title == "Book 1" })
         assertEquals(true, books.any { it.title == "Book 2" })
     }
 }
+
+
+
