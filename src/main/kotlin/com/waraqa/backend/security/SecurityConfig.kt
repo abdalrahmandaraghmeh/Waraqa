@@ -24,6 +24,13 @@ class SecurityConfig(
             .csrf { it.disable() }
             .authorizeHttpRequests { auth ->
                 auth.requestMatchers("/api/auth/**").permitAll()
+                    .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/books/my-books").authenticated()
+                    .requestMatchers(HttpMethod.GET, "/api/books").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/books/*").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/universities").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/faculties").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/majors").permitAll()
                     .anyRequest().authenticated()
             }
             .sessionManagement { session ->
