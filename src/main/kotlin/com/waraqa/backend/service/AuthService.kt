@@ -6,6 +6,7 @@ import com.waraqa.backend.dto.RegisterRequest
 import com.waraqa.backend.repository.UserRepository
 import com.waraqa.backend.security.JwtUtils
 import com.waraqa.backend.model.User
+import com.waraqa.backend.security.TokenBlacklistService
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 
@@ -18,7 +19,8 @@ class RegistrationException(
 class AuthService(
     private val userRepository: UserRepository,
     private val passwordEncoder: PasswordEncoder,
-    private val jwtUtils: JwtUtils
+    private val jwtUtils: JwtUtils,
+    private val tokenBlacklistService: TokenBlacklistService
 ) {
 
         fun register(request: RegisterRequest) {
@@ -55,5 +57,10 @@ class AuthService(
             email = user.email,
             phoneNumber = user.phoneNumber
         )
+    }
+
+    fun logout(token: String) {
+        tokenBlacklistService.blacklistToken(token)
+        org.springframework.security.core.context.SecurityContextHolder.clearContext()
     }
 }
