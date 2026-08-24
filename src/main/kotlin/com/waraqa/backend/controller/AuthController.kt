@@ -79,4 +79,14 @@ class AuthController(
     fun login(@RequestBody request: LoginRequest): AuthResponse {
         return authService.login(request)
     }
+
+    @PostMapping("/logout")
+    fun logout(request: jakarta.servlet.http.HttpServletRequest): ResponseEntity<Map<String, Any>> {
+        val header = request.getHeader("Authorization")
+        if (header != null && header.startsWith("Bearer ")) {
+            val token = header.substring(7)
+            authService.logout(token)
+        }
+        return ResponseEntity.ok(mapOf("success" to true, "message" to "Logged out successfully"))
+    }
 }
