@@ -17,8 +17,28 @@ class BookController(
 ) {
 
     @GetMapping
-    fun getAllBooks(): ResponseEntity<List<BookResponseDto>> {
-        val books = bookService.getAllBooks()
+    fun getAllBooks(
+        @RequestParam(name = "search", required = false) search: String?,
+        @RequestParam(name = "category", required = false) category: String?,
+        @RequestParam(name = "university_id", required = false) universityId: Long?,
+        @RequestParam(name = "faculty_id", required = false) facultyId: Long?,
+        @RequestParam(name = "major_id", required = false) majorId: Long?,
+        @RequestParam(name = "type", required = false) type: String?,
+        @RequestParam(name = "sort", defaultValue = "top_rated") sort: String?,
+        @RequestParam(name = "page", defaultValue = "0") page: Int,
+        @RequestParam(name = "limit", defaultValue = "8") limit: Int
+    ): ResponseEntity<List<BookResponseDto>> {
+        val books = bookService.getBooks(
+            search = search,
+            category = category,
+            universityId = universityId,
+            facultyId = facultyId,
+            majorId = majorId,
+            type = type,
+            sort = sort,
+            page = page,
+            limit = limit
+        )
         return ResponseEntity.ok(books)
     }
 

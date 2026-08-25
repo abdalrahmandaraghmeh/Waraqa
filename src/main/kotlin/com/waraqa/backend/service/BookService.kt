@@ -19,6 +19,30 @@ class BookService(
     private val userRepository: UserRepository
 ) {
 
+    fun getBooks(
+        search: String?,
+        category: String?,
+        universityId: Long?,
+        facultyId: Long?,
+        majorId: Long?,
+        type: String?,
+        sort: String?,
+        page: Int,
+        limit: Int
+    ): List<BookResponseDto> {
+        return bookRepository.findBooks(
+            search = search,
+            category = category,
+            universityId = universityId,
+            facultyId = facultyId,
+            majorId = majorId,
+            type = type,
+            sort = sort,
+            page = page,
+            limit = limit
+        ).map { it.toDto() }
+    }
+
     fun getAllBooks(): List<BookResponseDto> {
         return bookRepository.findAll().map { it.toDto() }
     }
@@ -46,46 +70,65 @@ class BookService(
         val book = Book(
             title = request.title,
             price = request.price,
-            imagesUrl = request.imagesUrl,
-            userId = userId
+            coverImage = request.imagesUrl.firstOrNull(),
+            publisherId = userId,
+            universityId = request.universityId,
+            facultyId = request.facultyId,
+            majorId = request.majorId,
+            category = request.category ?: "academic",
+            type = request.type ?: "Used"
         )
-
         return bookRepository.save(book)
     }
 
     fun getBookById(bookId: Long): ListingResponseDto {
+        val book = bookRepository.findById(bookId)
+            .orElseThrow { RuntimeException("Book not found") }
+
         return ListingResponseDto(
-            id = bookId,
-            title = "كتاب هندسة البرمجيات",
-            description = "نسخة ممتازة بدون علامات",
-            price = 15.0.toBigDecimal(),
-            category = "academic",
-            publisherId = 100L,
-            universityId = 1L,
-            facultyId = 2L,
-            majorId = 3L,
-            createdAt = LocalDateTime.now()
+            id = book.id ?: bookId,
+            title = book.title,
+            description = "Book listing",
+            price = book.price,
+            category = book.category ?: "academic",
+            publisherId = book.publisherId ?: 1L,
+            universityId = book.universityId ?: 1L,
+            facultyId = book.facultyId ?: 1L,
+            majorId = book.majorId ?: 1L,
+            createdAt = book.publishedAt
         )
     }
 
     fun updateBook(bookId: Long, request: UpdateBookRequest, currentUserId: Long): ListingResponseDto {
-        val bookPublisherId = 100L
+        val book = bookRepository.findById(bookId)
+            .orElseThrow { RuntimeException("Book not found") }
 
-        if (bookPublisherId != currentUserId) {
-            throw ForbiddenException("غير مسموح لك بتعديل هذا الكتاب لأنك لست المالِك.")
+        if (book.publisherId != currentUserId) {
+            throw ForbiddenException("Not authorized to edit this book.")
         }
 
+        val updated = book.copy(
+            title = request.title ?: book.title,
+            price = request.price ?: book.price,
+            category = request.category ?: book.category,
+            universityId = request.universityId ?: book.universityId,
+            facultyId = request.facultyId ?: book.facultyId,
+            majorId = request.majorId ?: book.majorId
+        )
+
+        bookRepository.save(updated)
+
         return ListingResponseDto(
-            id = bookId,
-            title = request.title ?: "كتاب هندسة البرمجيات",
-            description = request.description ?: "نسخة ممتازة بدون علامات",
-            price = request.price ?: 15.0.toBigDecimal(),
-            category = request.category ?: "academic",
-            publisherId = bookPublisherId,
-            universityId = request.universityId ?: 1L,
-            facultyId = request.facultyId ?: 2L,
-            majorId = request.majorId ?: 3L,
-            createdAt = LocalDateTime.now()
+            id = updated.id ?: bookId,
+            title = updated.title,
+            description = request.description ?: "",
+            price = updated.price,
+            category = updated.category ?: "academic",
+            publisherId = updated.publisherId ?: currentUserId,
+            universityId = updated.universityId ?: 1L,
+            facultyId = updated.facultyId ?: 1L,
+            majorId = updated.majorId ?: 1L,
+            createdAt = updated.publishedAt
         )
     }
 }

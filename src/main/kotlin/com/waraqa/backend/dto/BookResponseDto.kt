@@ -13,10 +13,10 @@ data class BookResponseDto(
 
 fun Book.toDto(): BookResponseDto {
     return BookResponseDto(
-        bookId = this.bookId,
+        bookId = this.id,
         title = this.title,
         price = this.price,
         imagesUrl = this.imagesUrl,
-        userId = this.userId
+        userId = this.publisherId
     )
 }
