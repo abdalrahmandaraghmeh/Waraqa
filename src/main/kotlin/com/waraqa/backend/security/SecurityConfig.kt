@@ -2,6 +2,7 @@ package com.waraqa.backend.security
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.HttpMethod
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
@@ -23,8 +24,8 @@ class SecurityConfig(
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
         val configuration = CorsConfiguration()
-        configuration.allowedOriginPatterns = listOf("*")
-        configuration.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
+        configuration.allowedOriginPatterns = listOf("http://localhost:*", "http://127.0.0.1:*")
+        configuration.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
         configuration.allowedHeaders = listOf("*")
         configuration.allowCredentials = true
 
@@ -36,11 +37,23 @@ class SecurityConfig(
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http
-            .cors { it.configurationSource(corsConfigurationSource()) }
             .csrf { it.disable() }
+            .cors { it.configurationSource(corsConfigurationSource()) }
             .authorizeHttpRequests { auth ->
-                auth.requestMatchers("/api/auth/**").permitAll()
-                    .anyRequest().authenticated()
+                // Public auth, docs, and error routes
+                auth.requestMatchers("/api/auth/**", "/error").permitAll()
+                    .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+
+                // Public search & lookup endpoints
+                auth.requestMatchers(HttpMethod.GET, "/api/books", "/api/books/*", "/listings", "/listings/*").permitAll()
+                auth.requestMatchers(HttpMethod.GET, "/api/universities", "/api/faculties", "/api/majors").permitAll()
+
+                // Authenticated routes
+                auth.requestMatchers(HttpMethod.POST, "/listings", "/api/listings").authenticated()
+                auth.requestMatchers(HttpMethod.GET, "/api/books/my-books").authenticated()
+                auth.requestMatchers("/api/users/profile").authenticated()
+
+                auth.anyRequest().authenticated()
             }
             .sessionManagement { session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)

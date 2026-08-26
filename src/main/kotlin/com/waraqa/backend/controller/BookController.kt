@@ -1,9 +1,13 @@
 package com.waraqa.backend.controller
 
+import com.waraqa.backend.dto.BookResponseDto
+import com.waraqa.backend.dto.CreateBookRequest
 import com.waraqa.backend.dto.ListingResponseDto
 import com.waraqa.backend.dto.UpdateBookRequest
 import com.waraqa.backend.service.BookService
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -12,20 +16,59 @@ class BookController(
     private val bookService: BookService
 ) {
 
-    // GET /api/books/{bookId} (عام للجميع)
+    @GetMapping
+    fun getAllBooks(
+        @RequestParam(name = "search", required = false) search: String?,
+        @RequestParam(name = "category", required = false) category: String?,
+        @RequestParam(name = "university_id", required = false) universityId: Long?,
+        @RequestParam(name = "faculty_id", required = false) facultyId: Long?,
+        @RequestParam(name = "major_id", required = false) majorId: Long?,
+        @RequestParam(name = "type", required = false) type: String?,
+        @RequestParam(name = "sort", defaultValue = "top_rated") sort: String?,
+        @RequestParam(name = "page", defaultValue = "0") page: Int,
+        @RequestParam(name = "limit", defaultValue = "8") limit: Int
+    ): ResponseEntity<List<BookResponseDto>> {
+        val books = bookService.getBooks(
+            search = search,
+            category = category,
+            universityId = universityId,
+            facultyId = facultyId,
+            majorId = majorId,
+            type = type,
+            sort = sort,
+            page = page,
+            limit = limit
+        )
+        return ResponseEntity.ok(books)
+    }
+
+    @GetMapping("/my-books")
+    fun getMyBooks(authentication: Authentication): ResponseEntity<List<BookResponseDto>> {
+        val userEmail = authentication.name
+        val myBooks = bookService.getMyBooks(userEmail)
+        return ResponseEntity.ok(myBooks)
+    }
+
+    @PostMapping
+    fun createBook(
+        @Valid @RequestBody request: CreateBookRequest
+    ): ResponseEntity<*> {
+        val book = bookService.createBook(request)
+        return ResponseEntity.ok(book)
+    }
+
     @GetMapping("/{bookId}")
     fun getBookDetails(@PathVariable bookId: Long): ResponseEntity<ListingResponseDto> {
         val book = bookService.getBookById(bookId)
         return ResponseEntity.ok(book)
     }
 
-    // PUT /api/books/{bookId} (يتطلب التحقق من الملكية)
     @PutMapping("/{bookId}")
     fun updateBook(
         @PathVariable bookId: Long,
         @RequestBody request: UpdateBookRequest
     ): ResponseEntity<ListingResponseDto> {
-        val mockCurrentUserId = 100L // محاكاة لـ userId المستخرج مستقبلاً من JWT
+        val mockCurrentUserId = 100L
         val updatedBook = bookService.updateBook(bookId, request, mockCurrentUserId)
         return ResponseEntity.ok(updatedBook)
     }
