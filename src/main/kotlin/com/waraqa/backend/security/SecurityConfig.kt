@@ -45,10 +45,11 @@ class SecurityConfig(
                     .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
 
                 // Public search & lookup endpoints
-                auth.requestMatchers(HttpMethod.GET, "/api/books", "/api/books/*").permitAll()
+                auth.requestMatchers(HttpMethod.GET, "/api/books", "/api/books/*", "/listings", "/listings/*").permitAll()
                 auth.requestMatchers(HttpMethod.GET, "/api/universities", "/api/faculties", "/api/majors").permitAll()
 
                 // Authenticated routes
+                auth.requestMatchers(HttpMethod.POST, "/listings", "/api/listings").authenticated()
                 auth.requestMatchers(HttpMethod.GET, "/api/books/my-books").authenticated()
                 auth.requestMatchers("/api/users/profile").authenticated()
 

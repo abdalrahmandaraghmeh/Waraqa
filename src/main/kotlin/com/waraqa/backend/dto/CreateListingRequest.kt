@@ -1,26 +1,38 @@
 package com.waraqa.backend.dto
 
-import jakarta.validation.constraints.NotBlank
-import jakarta.validation.constraints.NotNull
-import jakarta.validation.constraints.Positive
+import com.fasterxml.jackson.annotation.JsonProperty
 import java.math.BigDecimal
 
 data class CreateListingRequest(
-    @field:NotBlank(message = "العنوان مطلوب")
-    val title: String,
+    val image: String?,
 
-    val description: String? = null,
+    @JsonProperty("listing_type")
+    val listingType: String?,
 
-    @field:NotNull(message = "السعر مطلوب")
-    @field:Positive(message = "يجب أن يكون السعر أكبر من صفر")
-    val price: BigDecimal,
+    val title: String?,
 
-    @field:NotBlank(message = "نوع الفئة مطلوب (academic أو general)")
-    val category: String,
+    val author: String? = null,
 
+    val category: String?,
+
+    @JsonProperty("university_id")
     val universityId: Long? = null,
+
+    @JsonProperty("faculty_id")
     val facultyId: Long? = null,
+
+    @JsonProperty("major_id")
     val majorId: Long? = null,
 
-    val images: List<String>? = emptyList()
+    @JsonProperty("sub_type")
+    val subType: String? = null,
+
+    val price: BigDecimal?,
+
+    @JsonProperty("exchange_for")
+    val exchangeFor: String? = null,
+
+    val condition: String?,
+
+    val description: String?
 )
