@@ -17,4 +17,14 @@ class GlobalExceptionHandler {
     fun handleForbiddenException(ex: ForbiddenException): ResponseEntity<Map<String, String>> {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mapOf("error" to (ex.message ?: "Access denied")))
     }
+
+    @ExceptionHandler(NotFoundException::class)
+    fun handleNotFoundException(ex: NotFoundException): ResponseEntity<Map<String, String>> {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mapOf("error" to (ex.message ?: "Not found")))
+    }
+
+    @ExceptionHandler(Exception::class)
+    fun handleGenericException(ex: Exception): ResponseEntity<Map<String, String>> {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(mapOf("error" to "Something went wrong"))
+    }
 }
