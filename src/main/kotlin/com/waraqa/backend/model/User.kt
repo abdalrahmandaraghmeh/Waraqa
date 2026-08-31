@@ -14,5 +14,14 @@ data class User(
     val email: String,
     @Column("phone_number")
     val phoneNumber: String,
-    val password: String
+    val password: String,
+    @Column("avatar_url")
+    val avatarUrl: String? = null,
+    val rating: Double = 0.0,
+    @Column("total_sales")
+    val totalSales: Int = 0,
+    @Column("last_seen")
+    val lastSeen: LocalDateTime? = null,
+    @Column("created_at")
+    val createdAt: LocalDateTime? = LocalDateTime.now()
 )

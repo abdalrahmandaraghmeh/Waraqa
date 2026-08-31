@@ -8,25 +8,40 @@ import org.springframework.jdbc.support.GeneratedKeyHolder
 import org.springframework.stereotype.Repository
 import java.util.Optional
 import java.sql.Timestamp
+import java.time.LocalDateTime
 
 @Repository
 class BookRepository(private val jdbcTemplate: NamedParameterJdbcTemplate) {
 
     private val rowMapper = RowMapper { rs, _ ->
+        val sqlArray = rs.getArray("images_url")
+        val imagesList = if (sqlArray != null) {
+            (sqlArray.array as? Array<*>)?.mapNotNull {it?.toString()} ?: emptyList()
+        } else {
+            emptyList()
+        }
         Book(
             id = rs.getLong("id").takeUnless { rs.wasNull() },
             title = rs.getString("title"),
-            author = rs.getString("author"),
+            author = rs.getString("author") ?: "",
+            description = rs.getString("description") ?: "",
             price = rs.getBigDecimal("price"),
-            publishedAt = rs.getTimestamp("published_at").toLocalDateTime(),
-            coverImage = rs.getString("cover_image"),
-            category = rs.getString("category"),
+            listingType = rs.getString("listing_type") ?: "for_sale",
+            exchangeFor = rs.getString("exchange_for"),
+            condition = rs.getString("condition") ?: "good",
+            category = rs.getString("category") ?: "general",
             type = rs.getString("type"),
-            rating = rs.getDouble("rating"),
+            subType = rs.getString("sub_type"),
+            edition = rs.getString("edition"),
+            coverImage = rs.getString("cover_image"),
+            imagesUrl = imagesList,
+            viewsCount = rs.getInt("views_count"),
+            savesCount = rs.getInt("saves_count"),
             publisherId = rs.getLong("publisher_id"),
             universityId = rs.getLong("university_id").takeUnless { rs.wasNull() },
             facultyId = rs.getLong("faculty_id").takeUnless { rs.wasNull() },
-            majorId = rs.getLong("major_id").takeUnless { rs.wasNull() }
+            majorId = rs.getLong("major_id").takeUnless { rs.wasNull() },
+            publishedAt = rs.getTimestamp("published_at")?.toLocalDateTime() ?: LocalDateTime.now()
         )
     }
 
@@ -34,21 +49,38 @@ class BookRepository(private val jdbcTemplate: NamedParameterJdbcTemplate) {
         val params = MapSqlParameterSource()
             .addValue("title", book.title)
             .addValue("author", book.author)
+            .addValue("description", book.description)
             .addValue("price", book.price)
-            .addValue("publishedAt", Timestamp.valueOf(book.publishedAt))
-            .addValue("coverImage", book.coverImage)
+            .addValue("listingType", book.listingType)
+            .addValue("exchangeFor", book.exchangeFor)
+            .addValue("condition", book.condition)
             .addValue("category", book.category)
             .addValue("type", book.type)
-            .addValue("rating", book.rating)
+            .addValue("subType", book.subType)
+            .addValue("edition", book.edition)
+            .addValue("coverImage", book.coverImage)
+            .addValue("imagesUrl", book.imagesUrl.toTypedArray())
+            .addValue("viewsCount", book.viewsCount)
+            .addValue("savesCount", book.savesCount)
             .addValue("publisherId", book.publisherId)
             .addValue("universityId", book.universityId)
             .addValue("facultyId", book.facultyId)
             .addValue("majorId", book.majorId)
+            .addValue("publishedAt", Timestamp.valueOf(book.publishedAt))
+
 
         if (book.id == null) {
             val sql = """
-                INSERT INTO books (title, author, price, published_at, cover_image, category, type, rating, publisher_id, university_id, faculty_id, major_id)
-                VALUES (:title, :author, :price, :publishedAt, :coverImage, :category, :type, :rating, :publisherId, :universityId, :facultyId, :majorId)
+                INSERT INTO books (
+                title, author, description, price, listing_type, exchange_for,
+                 condition, category, type, sub_type, edition, cover_image,
+                 images_url, views_count, saves_count, publisher_id, university_id, faculty_id, major_id, published_at
+                 )
+                VALUES (
+                :title, :author, :description, :price, :listingType, :exchangeFor,
+                 :condition, :category, :type, :subType, :edition, :coverImage,
+                 :imagesUrl, :viewsCount, :savesCount, :publisherId, :universityId, :facultyId, :majorId, :publishedAt
+                 )
             """.trimIndent()
             val keyHolder = GeneratedKeyHolder()
             jdbcTemplate.update(sql, params, keyHolder, arrayOf("id"))
@@ -59,16 +91,24 @@ class BookRepository(private val jdbcTemplate: NamedParameterJdbcTemplate) {
                 UPDATE books SET
                     title = :title,
                     author = :author,
+                    description = :description,
                     price = :price,
-                    published_at = :publishedAt,
-                    cover_image = :coverImage,
+                    listing_type = :listingType,
+                    exchange_for = :exchangeFor,
+                    condition = :condition,
                     category = :category,
                     type = :type,
-                    rating = :rating,
+                    sub_type = :subType,
+                    edition = :edition,
+                    cover_image = :coverImage,
+                    images_url = :imagesUrl,
+                    views_count = :viewsCount,
+                    saves_count = :savesCount,
                     publisher_id = :publisherId,
                     university_id = :universityId,
                     faculty_id = :facultyId,
-                    major_id = :majorId
+                    major_id = :majorId,
+                    published_at = :publishedAt
                 WHERE id = :id
             """.trimIndent()
             params.addValue("id", book.id)
@@ -156,8 +196,11 @@ class BookRepository(private val jdbcTemplate: NamedParameterJdbcTemplate) {
         }
 
         val orderBy = when (sort) {
-            "top_rated" -> "ORDER BY rating DESC"
-            else -> "ORDER BY rating DESC"
+            "price_asc" -> "ORDER BY price ASC"
+            "price_desc" -> "ORDER BY price DESC"
+            "most_viewed" -> "ORDER BY views_count DESC"
+            "newest" -> "ORDER BY published_at DESC"
+            else -> "ORDER BY published_at DESC"
         }
 
         val offset = page * limit
