@@ -144,6 +144,11 @@ class BookRepository(private val jdbcTemplate: NamedParameterJdbcTemplate) {
         val sql = "SELECT * FROM books"
         return jdbcTemplate.query(sql, MapSqlParameterSource(), rowMapper)
     }
+    fun incrementViewsCount (id: Long) {
+        val sql = "UPDATE books SET views_count = views_count + 1 WHERE id = :id"
+        val params = MapSqlParameterSource("id", id)
+        jdbcTemplate.update(sql, params)
+    }
 
     fun findBooks(
         search: String?,

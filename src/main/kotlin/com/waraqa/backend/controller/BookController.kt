@@ -1,5 +1,6 @@
 package com.waraqa.backend.controller
 
+import com.waraqa.backend.dto.BookDetailDto
 import com.waraqa.backend.dto.BookResponseDto
 import com.waraqa.backend.dto.CreateBookRequest
 import com.waraqa.backend.dto.ListingResponseDto
@@ -58,7 +59,7 @@ class BookController(
     }
 
     @GetMapping("/{bookId}")
-    fun getBookDetails(@PathVariable bookId: Long): ResponseEntity<ListingResponseDto> {
+    fun getBookDetails(@PathVariable bookId: Long): ResponseEntity<BookDetailDto> {
         val book = bookService.getBookById(bookId)
         return ResponseEntity.ok(book)
     }

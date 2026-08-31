@@ -1,12 +1,16 @@
 package com.waraqa.backend.service
 
+import com.waraqa.backend.dto.BookDetailDto
 import com.waraqa.backend.dto.BookResponseDto
 import com.waraqa.backend.dto.CreateBookRequest
 import com.waraqa.backend.dto.ListingResponseDto
+import com.waraqa.backend.dto.SellerDto
 import com.waraqa.backend.dto.UpdateBookRequest
 import com.waraqa.backend.dto.toDto
 import com.waraqa.backend.exception.ForbiddenException
+import com.waraqa.backend.exception.NotFoundException
 import com.waraqa.backend.model.Book
+import com.waraqa.backend.repository.AcademicRepository
 import com.waraqa.backend.repository.BookRepository
 import com.waraqa.backend.repository.UserRepository
 import org.springframework.security.core.context.SecurityContextHolder
@@ -16,7 +20,8 @@ import java.time.LocalDateTime
 @Service
 class BookService(
     private val bookRepository: BookRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val academicRepository: AcademicRepository
 ) {
 
     fun getBooks(
@@ -49,7 +54,7 @@ class BookService(
 
     fun getMyBooks(userEmail: String): List<BookResponseDto> {
         val user = userRepository.findByEmail(userEmail)
-            .orElseThrow { RuntimeException("User not found") }
+            .orElseThrow { NotFoundException("User not found") }
 
         val userId = user.userId ?: throw RuntimeException("User ID is missing")
 
@@ -62,7 +67,7 @@ class BookService(
         val userEmail = authentication.name
 
         val user = userRepository.findByEmail(userEmail)
-            .orElseThrow { RuntimeException("User not found") }
+            .orElseThrow { NotFoundException("User not found") }
 
         val userId = user.userId
             ?: throw RuntimeException("User ID is missing")
@@ -81,27 +86,58 @@ class BookService(
         return bookRepository.save(book)
     }
 
-    fun getBookById(bookId: Long): ListingResponseDto {
-        val book = bookRepository.findById(bookId)
-            .orElseThrow { RuntimeException("Book not found") }
+    fun getBookById(bookId: Long): BookDetailDto {
+        bookRepository.incrementViewsCount(bookId)
 
-        return ListingResponseDto(
+        val book = bookRepository.findById(bookId)
+            .orElseThrow { NotFoundException("Book not found") }
+
+        val seller = userRepository.findById(book.publisherId)
+            .orElseThrow {NotFoundException("Seller not found")}
+
+        val isActiveToday = seller.lastSeen?.isAfter(LocalDateTime.now().minusHours(24)) ?: false
+
+        val universityName = book.universityId?.let { academicRepository.findUniversityById(it)?.name }
+        val facultyName = book.facultyId?.let { academicRepository.findFacultyById(it)?.name }
+        val majorName = book.majorId?.let { academicRepository.findMajorById(it)?.name }
+
+        val sellerDto = SellerDto(
+            userId = seller.userId ?: book.publisherId,
+            name = seller.name,
+            avatarUrl = seller.avatarUrl,
+            rating = seller.rating,
+            totalSales = seller.totalSales,
+            isActiveToday = isActiveToday
+        )
+
+        return BookDetailDto(
             id = book.id ?: bookId,
             title = book.title,
-            description = "Book listing",
+            author = book.author,
+            description = book.description,
             price = book.price,
-            category = book.category ?: "academic",
-            publisherId = book.publisherId ?: 1L,
-            universityId = book.universityId ?: 1L,
-            facultyId = book.facultyId ?: 1L,
-            majorId = book.majorId ?: 1L,
-            createdAt = book.publishedAt
+            listingType = book.listingType,
+            exchangeFor = book.exchangeFor,
+            condition = book.condition,
+            category = book.category,
+            type = book.type,
+            subType = book.subType,
+            edition = book.edition,
+            coverImage = book.coverImage,
+            imagesUrl = book.imagesUrl,
+            viewsCount = book.viewsCount,
+            savesCount = book.savesCount,
+            publishedAt = book.publishedAt,
+            universityName = universityName,
+            facultyName = facultyName,
+            majorName = majorName,
+            seller = sellerDto
         )
     }
 
     fun updateBook(bookId: Long, request: UpdateBookRequest, currentUserId: Long): ListingResponseDto {
         val book = bookRepository.findById(bookId)
-            .orElseThrow { RuntimeException("Book not found") }
+            .orElseThrow { NotFoundException("Book not found") }
 
         if (book.publisherId != currentUserId) {
             throw ForbiddenException("Not authorized to edit this book.")
@@ -123,8 +159,8 @@ class BookService(
             title = updated.title,
             description = request.description ?: "",
             price = updated.price,
-            category = updated.category ?: "academic",
-            publisherId = updated.publisherId ?: currentUserId,
+            category = request.category ?: book.category,
+            publisherId = updated.publisherId,
             universityId = updated.universityId ?: 1L,
             facultyId = updated.facultyId ?: 1L,
             majorId = updated.majorId ?: 1L,

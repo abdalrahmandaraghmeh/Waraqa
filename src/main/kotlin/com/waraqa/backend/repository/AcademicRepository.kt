@@ -60,4 +60,19 @@ class AcademicRepository(private val jdbcTemplate: NamedParameterJdbcTemplate) {
             jdbcTemplate.query(sql, majorMapper)
         }
     }
+    fun findUniversityById(id: Long) : University? {
+        val sql = "SELECT * FROM universities WHERE id = :id"
+        val params = MapSqlParameterSource("id", id)
+        return jdbcTemplate.query(sql, params, universityMapper).firstOrNull()
+    }
+    fun findFacultyById(id: Long): Faculty? {
+        val sql = "SELECT * FROM faculties WHERE id = :id"
+        val params = MapSqlParameterSource("id", id)
+        return jdbcTemplate.query(sql, params, facultyMapper).firstOrNull()
+    }
+    fun findMajorById(id: Long): Major? {
+        val sql = "SELECT * FROM majors WHERE id = :id"
+        val params = MapSqlParameterSource("id", id)
+        return jdbcTemplate.query(sql, params, majorMapper).firstOrNull()
+    }
 }
