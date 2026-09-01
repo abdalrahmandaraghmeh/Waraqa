@@ -6,6 +6,9 @@ import java.math.BigDecimal
 data class CreateListingRequest(
     val image: String?,
 
+    @JsonProperty("images_url")
+    val imagesUrl: List<String>? = emptyList(),
+
     @JsonProperty("listing_type")
     val listingType: String?,
 

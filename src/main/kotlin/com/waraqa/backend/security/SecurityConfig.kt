@@ -53,7 +53,7 @@ class SecurityConfig(
                 // Public search & lookup endpoints
                 auth.requestMatchers(HttpMethod.GET, "/api/books", "/api/books/*", "/listings", "/listings/*").permitAll()
                 auth.requestMatchers(HttpMethod.GET, "/api/universities", "/api/faculties", "/api/majors").permitAll()
-
+                auth.requestMatchers("/api/upload" ,"/api/upload/**", "/uploads/**").permitAll()
                 auth.anyRequest().authenticated()
             }
             .sessionManagement { session ->

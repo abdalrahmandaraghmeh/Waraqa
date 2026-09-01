@@ -101,14 +101,17 @@ class ListingService(
         val sql = """
             INSERT INTO books (
                 title, author, description, price, listing_type, exchange_for,
-                condition, category, sub_type, cover_image, publisher_id,
+                condition, category, sub_type, cover_image, images_url, publisher_id,
                 university_id, faculty_id, major_id, published_at
             ) VALUES (
                 :title, :author, :description, :price, :listingType, :exchangeFor,
-                :condition, :category, :subType, :coverImage, :publisherId,
+                :condition, :category, :subType, :coverImage, :imagesUrl, :publisherId,
                 :universityId, :facultyId, :majorId, :publishedAt
             )
         """.trimIndent()
+
+        val allImages = request.imagesUrl?.takeIf { it.isNotEmpty() }
+            ?: listOfNotNull(request.image?.trim()).filter { it.isNotBlank() }
 
         val params = MapSqlParameterSource()
             .addValue("title", request.title!!.trim())
@@ -121,6 +124,7 @@ class ListingService(
             .addValue("category", request.category)
             .addValue("subType", if (request.category == "general") request.subType else null)
             .addValue("coverImage", request.image!!.trim())
+            .addValue("imagesUrl", allImages.toTypedArray())
             .addValue("publisherId", publisherId)
             .addValue("universityId", if (request.category == "academic") request.universityId else null)
             .addValue("facultyId", if (request.category == "academic") request.facultyId else null)
