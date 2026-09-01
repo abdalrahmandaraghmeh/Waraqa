@@ -9,7 +9,7 @@ data class ListingResponseDto(
     val title: String,
     val author: String? = null,
     val description: String? = null,
-    val price: BigDecimal,
+    val price: BigDecimal? = null,
 
     @JsonProperty("listing_type")
     val listingType: String = "for_sale",

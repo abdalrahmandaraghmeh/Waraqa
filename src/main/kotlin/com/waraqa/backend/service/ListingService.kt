@@ -72,9 +72,15 @@ class ListingService(
             }
         }
 
-        // Price validation
-        if (request.price == null || request.price <= BigDecimal.ZERO) {
-            errors["price"] = "Price is required and must be greater than zero"
+        // Price validation conditional on listing_type
+        if (request.listingType == "for_sale") {
+            if (request.price == null || request.price <= BigDecimal.ZERO) {
+                errors["price"] = "Price is required and must be greater than zero"
+            }
+        } else if (request.listingType == "for_sale_and_exchange") {
+            if (request.price != null && request.price < BigDecimal.ZERO) {
+                errors["price"] = "Price cannot be negative"
+            }
         }
 
         // Exchange_for validation conditional on listing_type
@@ -112,7 +118,7 @@ class ListingService(
             .addValue("title", request.title!!.trim())
             .addValue("author", request.author?.trim()?.takeIf { it.isNotBlank() })
             .addValue("description", request.description?.trim() ?: "")
-            .addValue("price", request.price!!)
+            .addValue("price", request.price)
             .addValue("listingType", request.listingType)
             .addValue("exchangeFor", if (request.listingType == "for_sale_and_exchange") request.exchangeFor?.trim() else null)
             .addValue("condition", request.condition)
@@ -135,7 +141,7 @@ class ListingService(
             title = request.title.trim(),
             author = request.author?.trim()?.takeIf { it.isNotBlank() },
             description = request.description?.trim() ?: "",
-            price = request.price!!,
+            price = request.price,
             listingType = request.listingType!!,
             exchangeFor = if (request.listingType == "for_sale_and_exchange") request.exchangeFor?.trim() else null,
             condition = request.condition!!,

@@ -13,7 +13,7 @@ data class Book(
     val title: String,
     val author: String = "",
     val description: String = "",
-    val price: BigDecimal,
+    val price: BigDecimal? = null,
 
     @Column("listing_type")
     val listingType: String = "for_sale",

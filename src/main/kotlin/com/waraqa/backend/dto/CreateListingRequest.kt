@@ -30,7 +30,7 @@ data class CreateListingRequest(
     @JsonProperty("sub_type")
     val subType: String? = null,
 
-    val price: BigDecimal?,
+    val price: BigDecimal? = null,
 
     @JsonProperty("exchange_for")
     val exchangeFor: String? = null,
