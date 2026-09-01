@@ -87,11 +87,6 @@ class ListingService(
             errors["condition"] = "Condition must be 'new', 'good', or 'fair'"
         }
 
-        // Description validation
-        if (request.description.isNullOrBlank()) {
-            errors["description"] = "Description is required"
-        }
-
         if (errors.isNotEmpty()) {
             throw ValidationException(errors)
         }
@@ -116,7 +111,7 @@ class ListingService(
         val params = MapSqlParameterSource()
             .addValue("title", request.title!!.trim())
             .addValue("author", request.author?.trim()?.takeIf { it.isNotBlank() })
-            .addValue("description", request.description!!.trim())
+            .addValue("description", request.description?.trim() ?: "")
             .addValue("price", request.price!!)
             .addValue("listingType", request.listingType)
             .addValue("exchangeFor", if (request.listingType == "for_sale_and_exchange") request.exchangeFor?.trim() else null)
@@ -139,7 +134,7 @@ class ListingService(
             id = generatedId,
             title = request.title.trim(),
             author = request.author?.trim()?.takeIf { it.isNotBlank() },
-            description = request.description.trim(),
+            description = request.description?.trim() ?: "",
             price = request.price!!,
             listingType = request.listingType!!,
             exchangeFor = if (request.listingType == "for_sale_and_exchange") request.exchangeFor?.trim() else null,
