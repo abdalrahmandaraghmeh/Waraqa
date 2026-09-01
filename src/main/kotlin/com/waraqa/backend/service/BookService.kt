@@ -30,7 +30,7 @@ class BookService(
         universityId: Long?,
         facultyId: Long?,
         majorId: Long?,
-        type: String?,
+        subType: String?,
         sort: String?,
         page: Int,
         limit: Int
@@ -41,7 +41,7 @@ class BookService(
             universityId = universityId,
             facultyId = facultyId,
             majorId = majorId,
-            type = type,
+            subType = subType,
             sort = sort,
             page = page,
             limit = limit

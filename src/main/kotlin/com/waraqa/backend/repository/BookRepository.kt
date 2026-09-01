@@ -156,7 +156,7 @@ class BookRepository(private val jdbcTemplate: NamedParameterJdbcTemplate) {
         universityId: Long?,
         facultyId: Long?,
         majorId: Long?,
-        type: String?,
+        subType: String?,
         sort: String?,
         page: Int,
         limit: Int
@@ -189,9 +189,9 @@ class BookRepository(private val jdbcTemplate: NamedParameterJdbcTemplate) {
             params.addValue("majorId", majorId)
         }
 
-        if (!type.isNullOrBlank()) {
-            conditions.add("type = :type")
-            params.addValue("type", type)
+        if (!subType.isNullOrBlank()) {
+            conditions.add("sub_type = :subType")
+            params.addValue("subType", subType)
         }
 
         val whereClause = if (conditions.isNotEmpty()) {

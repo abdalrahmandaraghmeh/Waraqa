@@ -24,7 +24,7 @@ class BookController(
         @RequestParam(name = "university_id", required = false) universityId: Long?,
         @RequestParam(name = "faculty_id", required = false) facultyId: Long?,
         @RequestParam(name = "major_id", required = false) majorId: Long?,
-        @RequestParam(name = "type", required = false) type: String?,
+        @RequestParam(name = "sub_type", required = false) subType: String?,
         @RequestParam(name = "sort", defaultValue = "top_rated") sort: String?,
         @RequestParam(name = "page", defaultValue = "0") page: Int,
         @RequestParam(name = "limit", defaultValue = "8") limit: Int
@@ -35,7 +35,7 @@ class BookController(
             universityId = universityId,
             facultyId = facultyId,
             majorId = majorId,
-            type = type,
+            subType = subType,
             sort = sort,
             page = page,
             limit = limit
