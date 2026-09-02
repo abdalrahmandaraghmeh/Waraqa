@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR(255) UNIQUE NOT NULL,
     phone_number VARCHAR(50) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
-    avatar_url VARCHAR(500),
+    avatar_url TEXT,
     rating DOUBLE PRECISION DEFAULT 0.0,
     total_sales INT DEFAULT 0,
     last_seen TIMESTAMP,
@@ -29,7 +29,8 @@ CREATE TABLE IF NOT EXISTS faculties (
 CREATE TABLE IF NOT EXISTS majors (
                                       id BIGSERIAL PRIMARY KEY,
                                       name VARCHAR(255) NOT NULL,
-    faculty_id BIGINT NOT NULL REFERENCES faculties(id) ON DELETE CASCADE
+    faculty_id BIGINT NOT NULL REFERENCES faculties(id) ON DELETE CASCADE,
+    CONSTRAINT uq_faculty_major UNIQUE (faculty_id, name)
     );
 
 CREATE TABLE IF NOT EXISTS books (
@@ -45,7 +46,7 @@ CREATE TABLE IF NOT EXISTS books (
     type VARCHAR(50),
     sub_type VARCHAR(50),
     edition VARCHAR(100),
-    cover_image VARCHAR(500),
+    cover_image TEXT,
     images_url TEXT[],
     views_count INT DEFAULT 0,
     saves_count INT DEFAULT 0,
@@ -61,7 +62,7 @@ CREATE TABLE IF NOT EXISTS books (
     );
 
 -- =========================================================================
--- 2. UNIVERSITIES SEED DATA (All 24 Universities)
+-- 2. UNIVERSITIES SEED DATA
 -- =========================================================================
 
 INSERT INTO universities (id, name) VALUES
@@ -297,7 +298,7 @@ INSERT INTO faculties (id, university_id, name) VALUES
 (2305, 23, 'Faculty of Architecture & Design'),
 (2306, 23, 'Faculty of Languages & Communication'),
 
--- 24. World Islamic Sciences and Education University (WISE)
+-- 24. WISE University
 (2401, 24, 'Faculty of Information Technology'),
 (2402, 24, 'Faculty of Islamic Banking & Financial Sciences'),
 (2403, 24, 'Faculty of Business & Management'),
@@ -504,7 +505,7 @@ INSERT INTO majors (faculty_id, name) VALUES
 (2205, 'Law'),
 (2206, 'Special Education'), (2206, 'Educational Administration'),
 
--- 23. American University of Madaba (2301 - 2306)
+-- 23. American University of Madaba (AUM) (2301 - 2306)
 (2301, 'Computer Science'), (2301, 'Data Science & AI'), (2301, 'Cybersecurity'),
 (2302, 'Civil Engineering'), (2302, 'Electrical Engineering'), (2302, 'Mechanical Engineering'),
 (2303, 'Pharmacy'), (2303, 'Medical Laboratories'), (2303, 'Nutrition & Dietetics'),
@@ -518,7 +519,8 @@ INSERT INTO majors (faculty_id, name) VALUES
 (2403, 'Business Administration'), (2403, 'Accounting'), (2403, 'Marketing'), (2403, 'Management Information Systems (MIS)'),
 (2404, 'Islamic Jurisprudence (Fiqh)'), (2404, 'Usul al-Fiqh'), (2404, 'Quranic Studies'), (2404, 'Hadith & Its Sciences'),
 (2405, 'Arabic Language & Literature'), (2405, 'English Language & Literature'), (2405, 'Islamic History'),
-(2406, 'Sharia & Law'), (2406, 'Public Law');
+(2406, 'Sharia & Law'), (2406, 'Public Law')
+    ON CONFLICT (faculty_id, name) DO NOTHING;
 
 -- =========================================================================
 -- 5. RESET SEQUENCES
@@ -527,3 +529,14 @@ INSERT INTO majors (faculty_id, name) VALUES
 SELECT setval('universities_id_seq', (SELECT COALESCE(MAX(id), 1) FROM universities));
 SELECT setval('faculties_id_seq', (SELECT COALESCE(MAX(id), 1) FROM faculties));
 SELECT setval('majors_id_seq', (SELECT COALESCE(MAX(id), 1) FROM majors));
+
+-- =========================================================================
+-- 6. INDEXES
+-- =========================================================================
+
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_phone ON users(phone_number);
+CREATE INDEX IF NOT EXISTS idx_books_publisher ON books(publisher_id);
+CREATE INDEX IF NOT EXISTS idx_books_university ON books(university_id);
+CREATE INDEX IF NOT EXISTS idx_books_faculty ON books(faculty_id);
+CREATE INDEX IF NOT EXISTS idx_books_major ON books(major_id);
