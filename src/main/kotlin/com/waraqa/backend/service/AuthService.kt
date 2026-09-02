@@ -23,9 +23,13 @@ class AuthService(
     private val tokenBlacklistService: TokenBlacklistService
 ) {
 
-        fun register(request: RegisterRequest) {
+    fun register(request: RegisterRequest) {
         if (userRepository.existsByEmail(request.email)) {
             throw RegistrationException("email", "Email is already in use")
+        }
+
+        if (userRepository.existsByPhoneNumber(request.phoneNumber)) {
+            throw RegistrationException("phone_number", "Phone number is already in use")
         }
 
         val encodedPassword = passwordEncoder.encode(request.password)

@@ -1,5 +1,6 @@
 package com.waraqa.backend.dto
 
+import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonProperty
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
@@ -9,6 +10,7 @@ data class RegisterRequest(
 
     @field:NotBlank(message = "Full name is required")
     @JsonProperty("full_name")
+    @JsonAlias("fullName", "name")
     val name: String,
 
     @field:NotBlank(message = "Email is required")
@@ -24,5 +26,6 @@ data class RegisterRequest(
 
     @field:NotBlank(message = "Phone number is required")
     @JsonProperty("phone_number")
+    @JsonAlias("phoneNumber")
     val phoneNumber: String
 )

@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -14,6 +15,7 @@ import org.springframework.web.cors.CorsConfigurationSource
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 
 @Configuration
+@EnableWebSecurity
 class SecurityConfig(
     private val jwtAuthenticationFilter: JwtAuthenticationFilter
 ) {
@@ -24,9 +26,15 @@ class SecurityConfig(
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
         val configuration = CorsConfiguration()
+        configuration.allowedOrigins = listOf(
+            "http://localhost:5173",
+            "http://localhost:3000",
+            "http://127.0.0.1:5173"
+        )
         configuration.allowedOriginPatterns = listOf("http://localhost:*", "http://127.0.0.1:*")
         configuration.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
         configuration.allowedHeaders = listOf("*")
+        configuration.exposedHeaders = listOf("Authorization", "Content-Type")
         configuration.allowCredentials = true
 
         val source = UrlBasedCorsConfigurationSource()
@@ -40,11 +48,14 @@ class SecurityConfig(
             .csrf { it.disable() }
             .cors { it.configurationSource(corsConfigurationSource()) }
             .authorizeHttpRequests { auth ->
+                // Allow all CORS preflight OPTIONS requests unconditionally
+                auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
                 // Public auth, docs, and error routes
                 auth.requestMatchers("/api/auth/**", "/error").permitAll()
                     .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
 
-
+                // Authenticated routes
                 auth.requestMatchers(HttpMethod.GET, "/api/books/my-books").authenticated()
                 auth.requestMatchers(HttpMethod.POST, "/api/books", "/listings", "/api/listings").authenticated()
                 auth.requestMatchers(HttpMethod.PUT, "/api/books/*").authenticated()
@@ -53,7 +64,8 @@ class SecurityConfig(
                 // Public search & lookup endpoints
                 auth.requestMatchers(HttpMethod.GET, "/api/books", "/api/books/*", "/listings", "/listings/*").permitAll()
                 auth.requestMatchers(HttpMethod.GET, "/api/universities", "/api/faculties", "/api/majors").permitAll()
-                auth.requestMatchers("/api/upload" ,"/api/upload/**", "/uploads/**").permitAll()
+                auth.requestMatchers("/api/upload", "/api/upload/**", "/uploads/**").permitAll()
+
                 auth.anyRequest().authenticated()
             }
             .sessionManagement { session ->
