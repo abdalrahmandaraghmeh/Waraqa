@@ -76,7 +76,7 @@ class AuthController(
     } // <-- Added missing closing brace here!
 
     @PostMapping("/login")
-    fun login(@RequestBody request: LoginRequest): AuthResponse {
+    fun login(@Valid @RequestBody request: LoginRequest): AuthResponse {
         return authService.login(request)
     }
 

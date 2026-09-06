@@ -7,8 +7,10 @@ import com.waraqa.backend.repository.UserRepository
 import com.waraqa.backend.security.JwtUtils
 import com.waraqa.backend.model.User
 import com.waraqa.backend.security.TokenBlacklistService
+import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 class RegistrationException(
     val field: String,
@@ -23,6 +25,7 @@ class AuthService(
     private val tokenBlacklistService: TokenBlacklistService
 ) {
 
+    @Transactional
     fun register(request: RegisterRequest) {
         if (userRepository.existsByEmail(request.email)) {
             throw RegistrationException("email", "Email is already in use")
@@ -32,13 +35,11 @@ class AuthService(
             throw RegistrationException("phone_number", "Phone number is already in use")
         }
 
-        val encodedPassword = passwordEncoder.encode(request.password)
-
         val user = User(
             name = request.name,
             email = request.email,
             phoneNumber = request.phoneNumber,
-            password = encodedPassword!!
+            password = passwordEncoder.encode(request.password)!!
         )
 
         userRepository.save(user)
@@ -46,10 +47,10 @@ class AuthService(
 
     fun login(request: LoginRequest): AuthResponse {
         val user = userRepository.findByEmail(request.email)
-            .orElseThrow { RuntimeException("Invalid email or password") }
+            .orElseThrow { BadCredentialsException("Invalid email or password") }
 
         if (!passwordEncoder.matches(request.password, user.password)) {
-            throw RuntimeException("Invalid email or password")
+            throw BadCredentialsException("Invalid email or password")
         }
 
         val token = jwtUtils.generateToken(user.email)
