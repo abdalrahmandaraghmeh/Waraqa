@@ -22,6 +22,7 @@ data class User(
     val totalSales: Int = 0,
     @Column("last_seen")
     val lastSeen: LocalDateTime? = null,
+    val bio: String? = null,
     @Column("created_at")
     val createdAt: LocalDateTime? = LocalDateTime.now()
 )

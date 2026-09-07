@@ -11,7 +11,7 @@ import com.waraqa.backend.dto.LoginRequest
 import com.waraqa.backend.dto.AuthResponse
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/v1/auth")
 class AuthController(
     private val authService: AuthService
 ) {

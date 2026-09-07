@@ -1,0 +1,13 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/waraqa_db
+    username: postgres
+    password: password123
+    driver-class-name: org.postgresql.Driver
+  sql:
+    init:
+      mode: always
+
+jwt:
+  secret: waraqa_test_secret_key_must_be_at_least_32_bytes_long_123456
+  expiration-ms: 604800000

@@ -1,0 +1,2082 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تقرير تدقيق الكود الشامل — منصة ورق | Waraq Codebase Audit Report</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-light: #3b82f6;
+      --accent: #0284c7;
+      --text: #1f2937;
+      --text-muted: #4b5563;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --border-dark: #cbd5e1;
+      --p0-bg: #fee2e2;
+      --p0-text: #991b1b;
+      --p0-border: #f87171;
+      --p1-bg: #ffedd5;
+      --p1-text: #9a3412;
+      --p1-border: #fb923c;
+      --p2-bg: #fef9c3;
+      --p2-text: #854d0e;
+      --p2-border: #facc15;
+      --p3-bg: #e0f2fe;
+      --p3-text: #075985;
+      --p3-border: #38bdf8;
+      --success-bg: #dcfce7;
+      --success-text: #166534;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Cairo', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.75;
+      font-size: 15px;
+      padding: 2rem 1rem;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 1080px;
+      margin: 0 auto;
+      background: var(--surface);
+      padding: 3.5rem 4rem;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.03);
+      border: 1px solid var(--border);
+    }
+
+    /* Top Action Bar */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 1.5rem;
+      margin-bottom: 2rem;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .badge-platform {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: #eff6ff;
+      color: var(--primary);
+      padding: 0.4rem 1rem;
+      border-radius: 9999px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      border: 1px solid #bfdbfe;
+    }
+
+    .btn-print {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 0.55rem 1.4rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 4px rgba(30, 58, 138, 0.2);
+    }
+
+    .btn-print:hover {
+      background: #172554;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(30, 58, 138, 0.3);
+    }
+
+    /* Typography */
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.3;
+      margin-bottom: 0.75rem;
+      letter-spacing: -0.02em;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin-top: 2.75rem;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--border);
+      position: relative;
+    }
+
+    h2::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      right: 0;
+      width: 60px;
+      height: 2px;
+      background: var(--accent);
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #334155;
+      margin-top: 1.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    h4 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #475569;
+      margin-top: 1.25rem;
+      margin-bottom: 0.5rem;
+    }
+
+    p {
+      margin-bottom: 1.1rem;
+      color: #334155;
+    }
+
+    ul, ol {
+      margin-bottom: 1.25rem;
+      padding-right: 1.75rem;
+      padding-left: 0;
+    }
+
+    li {
+      margin-bottom: 0.4rem;
+    }
+
+    hr {
+      border: 0;
+      height: 1px;
+      background: var(--border);
+      margin: 2.5rem 0;
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      font-size: 0.92rem;
+      background: var(--surface);
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    th, td {
+      padding: 0.75rem 1rem;
+      text-align: right;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    th {
+      background-color: #f1f5f9;
+      color: #0f172a;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    tr:nth-child(even) td {
+      background-color: #f8fafc;
+    }
+
+    tr:hover td {
+      background-color: #f1f5f9;
+    }
+
+    /* Code & Pre */
+    code {
+      font-family: 'JetBrains Mono', Consolas, Monaco, monospace;
+      font-size: 0.88em;
+      background: #f1f5f9;
+      color: #0f172a;
+      padding: 0.2em 0.45em;
+      border-radius: 4px;
+      border: 1px solid #e2e8f0;
+      direction: ltr;
+      display: inline-block;
+    }
+
+    pre {
+      direction: ltr;
+      text-align: left;
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 1.25rem;
+      border-radius: 10px;
+      overflow-x: auto;
+      margin: 1.25rem 0;
+      border: 1px solid #1e293b;
+      line-height: 1.6;
+    }
+
+    pre code {
+      background: transparent;
+      color: inherit;
+      padding: 0;
+      border: none;
+      font-size: 0.88rem;
+    }
+
+    /* Blockquotes */
+    blockquote {
+      border-right: 4px solid var(--accent);
+      border-left: none;
+      padding: 0.75rem 1.25rem;
+      margin: 1.25rem 0;
+      background: #f0f9ff;
+      border-radius: 0 8px 8px 0;
+      color: #0369a1;
+      font-style: italic;
+    }
+
+    /* Links */
+    a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    /* Severity Indicators & Pills */
+    strong {
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    /* Print Styles */
+    @media print {
+      body {
+        background: #fff;
+        padding: 0;
+        font-size: 11pt;
+      }
+
+      .container {
+        max-width: 100%;
+        padding: 0;
+        border: none;
+        box-shadow: none;
+      }
+
+      .top-bar, .btn-print {
+        display: none !important;
+      }
+
+      h2 {
+        break-before: page;
+        margin-top: 1.5rem;
+      }
+
+      h1, h2, h3, h4 {
+        color: #000;
+      }
+
+      pre, blockquote, table {
+        page-break-inside: avoid;
+      }
+
+      pre {
+        background: #f8fafc !important;
+        color: #0f172a !important;
+        border: 1px solid #cbd5e1 !important;
+      }
+
+      pre code {
+        color: #0f172a !important;
+      }
+
+      a {
+        color: #000;
+        text-decoration: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="top-bar">
+      <div class="badge-platform">
+        <span>📖</span>
+        <span>منصة ورق — Waraq Marketplace Platform</span>
+      </div>
+      <button class="btn-print" onclick="window.print()">
+        <span>🖨️</span>
+        <span>طباعة / حفظ كملف PDF</span>
+      </button>
+    </div>
+    
+    <div class="content">
+      <h1>Waraq — ورق</h1>
+<h1>Complete Codebase Audit &amp; Refactoring Assessment</h1>
+<h1>تدقيق شامل للكود وتقييم إعادة الهيكلة</h1>
+<hr>
+<h2>1. Executive Summary | الملخص التنفيذي</h2>
+<table>
+<thead>
+<tr>
+<th>Dimension / البُعد</th>
+<th>Rating / التقييم</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Overall Codebase Quality / جودة الكود</strong></td>
+<td>Needs Improvement / يحتاج تحسين</td>
+</tr>
+<tr>
+<td><strong>Architecture Quality / جودة الهيكلية</strong></td>
+<td>Acceptable (early-stage) / مقبولة (مرحلة مبكرة)</td>
+</tr>
+<tr>
+<td><strong>Biggest Strengths / أبرز نقاط القوة</strong></td>
+<td>فصل الكتب عن الإعلانات، مصادقة JWT صحيحة، استخدام جيد لـ Kotlin data classes</td>
+</tr>
+<tr>
+<td><strong>Biggest Problems / أبرز المشاكل</strong></td>
+<td>مفاتيح سرية مكتوبة بالكود، دوال مكررة بالـ Repository، اختبارات معطلة، رفع ملفات بدون مصادقة، قائمة سوداء للتوكنات في الذاكرة فقط</td>
+</tr>
+<tr>
+<td><strong>Overall Technical Debt / الدين التقني</strong></td>
+<td>Moderate / متوسط</td>
+</tr>
+<tr>
+<td><strong>Overall Refactoring Necessity / ضرورة إعادة الهيكلة</strong></td>
+<td>Moderate — targeted fixes, not a rewrite / متوسطة — إصلاحات مستهدفة وليس إعادة كتابة</td>
+</tr>
+</tbody></table>
+<p><strong>Overall Assessment: Needs Improvement</strong>
+<strong>التقييم العام: يحتاج تحسين</strong></p>
+<p><strong>EN:</strong> This is an early-stage Spring Boot + Kotlin backend for <strong>Waraq (ورق)</strong> — a marketplace for buying, selling, and exchanging books, targeting <strong>the general public as well as university students</strong> in Jordan. The core architecture (Controller → Service → Repository → DB) is sound and consistently followed. However, there are <strong>critical security issues</strong> (hardcoded JWT secret, database credentials in version control, unauthenticated file uploads), <strong>duplicate query methods</strong> in the repository layer, <strong>stale/broken tests</strong> that reference a previous data model, and several missing features (no update/delete for listings, no pagination metadata). The codebase is small (~38 source files, ~2,200 lines of Kotlin) and the problems are fixable without architectural redesign.</p>
+<p><strong>AR:</strong> هذا مشروع في مراحله الأولى مبني بـ Spring Boot + Kotlin لمنصة <strong>ورق (Waraq)</strong> — سوق لبيع وشراء وتبادل الكتب، يستهدف <strong>العامة بالإضافة لطلاب الجامعات</strong> في الأردن. الهيكلية الأساسية (Controller → Service → Repository → DB) سليمة ومتبعة بشكل ثابت. لكن توجد <strong>مشاكل أمنية حرجة</strong> (مفتاح JWT ثابت بالكود، بيانات قاعدة البيانات محفوظة في نظام التحكم بالإصدارات، رفع ملفات بدون مصادقة)، <strong>دوال بحث مكررة</strong> في طبقة الـ Repository، <strong>اختبارات معطلة</strong> تشير لنموذج بيانات قديم، وعدة ميزات ناقصة. حجم الكود صغير (~38 ملف مصدري، ~2,200 سطر Kotlin) والمشاكل قابلة للإصلاح بدون إعادة تصميم معماري.</p>
+<hr>
+<h2>2. Project Overview | نظرة عامة على المشروع</h2>
+<h3>What the Project Does | ماذا يفعل المشروع</h3>
+<p><strong>EN:</strong> <strong>Waraq (ورق)</strong> is a REST API backend for a book marketplace where <strong>the general public and university students</strong> in Jordan can buy, sell, and exchange books. It supports:</p>
+<ul>
+<li>User registration &amp; login (JWT-based)</li>
+<li>Creating book listings (academic books tied to university/faculty/major, or general books/novels for anyone)</li>
+<li>Searching/filtering listings by category, university, faculty, major, price, etc.</li>
+<li>File upload for book cover images</li>
+<li>Academic hierarchy lookup (universities → faculties → majors)</li>
+</ul>
+<p><strong>AR:</strong> <strong>ورق (Waraq)</strong> هو واجهة برمجة تطبيقات (REST API) لسوق كتب حيث يمكن لـ<strong>العامة وطلاب الجامعات</strong> في الأردن بيع وشراء وتبادل الكتب. يدعم:</p>
+<ul>
+<li>تسجيل المستخدمين وتسجيل الدخول (مبني على JWT)</li>
+<li>إنشاء إعلانات كتب (كتب أكاديمية مرتبطة بجامعة/كلية/تخصص، أو كتب عامة/روايات لأي شخص)</li>
+<li>البحث والتصفية حسب التصنيف، الجامعة، الكلية، التخصص، السعر، إلخ</li>
+<li>رفع صور أغلفة الكتب</li>
+<li>استعراض التسلسل الأكاديمي (جامعات ← كليات ← تخصصات)</li>
+</ul>
+<h3>Main Technologies | التقنيات الرئيسية</h3>
+<table>
+<thead>
+<tr>
+<th>Technology / التقنية</th>
+<th>Version / الإصدار</th>
+<th>Purpose / الغرض</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Kotlin</td>
+<td>2.3.21</td>
+<td>اللغة الرئيسية / Primary language</td>
+</tr>
+<tr>
+<td>Spring Boot</td>
+<td>4.1.0</td>
+<td>إطار العمل / Application framework</td>
+</tr>
+<tr>
+<td>Spring Data JDBC</td>
+<td>(managed)</td>
+<td>طبقة الاستمرارية / Primary persistence</td>
+</tr>
+<tr>
+<td>Spring Security</td>
+<td>(managed)</td>
+<td>المصادقة / Authentication</td>
+</tr>
+<tr>
+<td>PostgreSQL</td>
+<td>15 (Alpine)</td>
+<td>قاعدة البيانات / Database</td>
+</tr>
+<tr>
+<td>JJWT</td>
+<td>0.11.5</td>
+<td>توليد وتحقق JWT / JWT token generation/validation</td>
+</tr>
+<tr>
+<td>BCrypt</td>
+<td>(Spring)</td>
+<td>تشفير كلمات المرور / Password hashing</td>
+</tr>
+<tr>
+<td>Gradle (Kotlin DSL)</td>
+<td>wrapper</td>
+<td>نظام البناء / Build system</td>
+</tr>
+<tr>
+<td>Docker Compose</td>
+<td>—</td>
+<td>حاوية PostgreSQL المحلية / Local PostgreSQL container</td>
+</tr>
+</tbody></table>
+<h3>Entry Point | نقطة الدخول</h3>
+<ul>
+<li><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/WaraqaApplication.kt">WaraqaApplication.kt</a> — Spring Boot main class مع <code>@EnableJdbcRepositories</code></li>
+</ul>
+<h3>Main Modules | الوحدات الرئيسية</h3>
+<table>
+<thead>
+<tr>
+<th>Package / الحزمة</th>
+<th>Purpose / الغرض</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>controller</code></td>
+<td>نقاط API النهائية (5 controllers) / REST API endpoints</td>
+</tr>
+<tr>
+<td><code>service</code></td>
+<td>منطق الأعمال (3 services) / Business logic</td>
+</tr>
+<tr>
+<td><code>repository</code></td>
+<td>الوصول للبيانات (4 repositories) / Data access</td>
+</tr>
+<tr>
+<td><code>model</code></td>
+<td>كيانات النطاق (4 ملفات) / Domain entities</td>
+</tr>
+<tr>
+<td><code>dto</code></td>
+<td>كائنات نقل البيانات (10 DTOs) / Request/response DTOs</td>
+</tr>
+<tr>
+<td><code>exception</code></td>
+<td>استثناءات مخصصة + معالج عام (5 ملفات) / Custom exceptions + global handler</td>
+</tr>
+<tr>
+<td><code>security</code></td>
+<td>فلتر JWT، أدوات، تكوين، قائمة سوداء (5 ملفات) / JWT filter, utils, config, blacklist</td>
+</tr>
+<tr>
+<td><code>config</code></td>
+<td>تكوين الويب/الموارد الثابتة (ملف واحد) / Web/static resource config</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>3. Architecture Overview | نظرة عامة على الهيكلية</h2>
+<h3>Actual Architecture | الهيكلية الفعلية</h3>
+<p><strong>EN:</strong> The project follows a <strong>standard 3-layer Spring Boot architecture</strong>.
+<strong>AR:</strong> المشروع يتبع <strong>هيكلية Spring Boot القياسية ذات 3 طبقات</strong>.</p>
+<pre><code class="language-mermaid">graph TD
+    Client[&quot;العميل / Client (Mobile/Web)&quot;]
+    subgraph Controllers
+        AC[&quot;AcademicController&quot;]
+        AUTH[&quot;AuthController&quot;]
+        FU[&quot;FileUploadController&quot;]
+        LC[&quot;ListingController&quot;]
+        UC[&quot;UserController&quot;]
+    end
+    subgraph Services
+        AS[&quot;AuthService&quot;]
+        BS[&quot;BookService&quot;]
+        LS[&quot;ListingService&quot;]
+    end
+    subgraph Repositories
+        AR[&quot;AcademicRepository&quot;]
+        BR[&quot;BookRepository&quot;]
+        LR[&quot;ListingRepository&quot;]
+        UR[&quot;UserRepository&quot;]
+    end
+    subgraph Security
+        JF[&quot;JwtAuthenticationFilter&quot;]
+        JU[&quot;JwtUtils&quot;]
+        SC[&quot;SecurityConfig&quot;]
+        SU[&quot;SecurityUtils&quot;]
+        TBS[&quot;TokenBlacklistService&quot;]
+    end
+    DB[&quot;PostgreSQL&quot;]
+
+    Client --&gt; JF --&gt; Controllers
+    AUTH --&gt; AS --&gt; UR
+    AC --&gt; AR
+    LC --&gt; LS --&gt; BR
+    LS --&gt; LR
+    LS --&gt; UR
+    UC --&gt; UR
+    FU --&gt; |&quot;نظام الملفات / Filesystem&quot;| Uploads[&quot;uploads/ directory&quot;]
+    AR --&gt; DB
+    BR --&gt; DB
+    LR --&gt; DB
+    UR --&gt; DB
+    AS --&gt; JU
+    AS --&gt; TBS
+    JF --&gt; JU
+    JF --&gt; TBS
+</code></pre>
+<h3>Layer Responsibilities | مسؤوليات الطبقات</h3>
+<table>
+<thead>
+<tr>
+<th>Layer / الطبقة</th>
+<th>Responsibility / المسؤولية</th>
+<th>Status / الحالة</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Controllers</strong></td>
+<td>معالجة HTTP، تحليل الطلبات، تنسيق الاستجابات</td>
+<td>نظيفة غالباً مع بعض المشاكل الصغيرة</td>
+</tr>
+<tr>
+<td><strong>Services</strong></td>
+<td>منطق الأعمال، التحقق، التنسيق</td>
+<td><code>ListingService</code> هو الأساسي؛ <code>BookService</code> غير مستخدم</td>
+</tr>
+<tr>
+<td><strong>Repositories</strong></td>
+<td>استعلامات SQL، ربط البيانات</td>
+<td>خليط من JDBC template و Spring Data CRUD؛ يوجد تكرار</td>
+</tr>
+<tr>
+<td><strong>Security</strong></td>
+<td>مصادقة JWT، CORS، حماية المسارات</td>
+<td>يعمل لكن فيه مفاتيح ثابتة</td>
+</tr>
+<tr>
+<td><strong>Models</strong></td>
+<td>ربط كيانات JDBC</td>
+<td>Kotlin data classes نظيفة</td>
+</tr>
+<tr>
+<td><strong>DTOs</strong></td>
+<td>عقود API</td>
+<td>معقولة مع بعض التداخل</td>
+</tr>
+</tbody></table>
+<h3>Architectural Observations | ملاحظات معمارية</h3>
+<p><strong>EN:</strong></p>
+<ol>
+<li><strong>Mixed persistence approach</strong>: <code>UserRepository</code> extends <code>CrudRepository</code> (auto-generated queries), while <code>BookRepository</code>, <code>ListingRepository</code>, and <code>AcademicRepository</code> use manual <code>NamedParameterJdbcTemplate</code>. Inconsistent but not necessarily wrong — the manual repos need complex queries.</li>
+<li><strong>No service layer for some controllers</strong>: <code>AcademicController</code> calls <code>AcademicRepository</code> directly. <code>UserController</code> calls <code>UserRepository</code> directly.</li>
+<li><strong>No JPA despite the dependency</strong>: <code>spring-boot-starter-data-jpa</code> is in <code>build.gradle.kts</code> but the project uses Spring Data JDBC exclusively. JPA is unused.</li>
+</ol>
+<p><strong>AR:</strong></p>
+<ol>
+<li><strong>نهج استمرارية مختلط</strong>: <code>UserRepository</code> يستخدم <code>CrudRepository</code> (استعلامات تلقائية)، بينما <code>BookRepository</code> و<code>ListingRepository</code> و<code>AcademicRepository</code> تستخدم <code>NamedParameterJdbcTemplate</code> يدوياً. غير متسق لكن ليس بالضرورة خطأ — الـ repositories اليدوية تحتاج استعلامات معقدة.</li>
+<li><strong>بعض الـ Controllers بدون طبقة Service</strong>: <code>AcademicController</code> يستدعي <code>AcademicRepository</code> مباشرة. <code>UserController</code> يستدعي <code>UserRepository</code> مباشرة.</li>
+<li><strong>JPA موجود كاعتماد لكن غير مستخدم</strong>: <code>spring-boot-starter-data-jpa</code> موجود بـ <code>build.gradle.kts</code> لكن المشروع يستخدم Spring Data JDBC حصراً.</li>
+</ol>
+<hr>
+<h2>4. Complete File Inventory | جرد الملفات الكامل</h2>
+<h3>Configuration &amp; Build Files | ملفات الإعداد والبناء</h3>
+<table>
+<thead>
+<tr>
+<th>File / الملف</th>
+<th>Type / النوع</th>
+<th>Purpose / الغرض</th>
+<th>Issues / المشاكل</th>
+<th>Refactoring / إعادة الهيكلة</th>
+<th>Priority / الأولوية</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/build.gradle.kts">build.gradle.kts</a></td>
+<td>بناء / Build</td>
+<td>تكوين Gradle والاعتمادات</td>
+<td>اعتماد <code>data-jpa</code> غير مستخدم؛ <code>data-jdbc</code> و <code>data-jpa</code> معاً</td>
+<td>إزالة اعتماد JPA</td>
+<td>P3</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/settings.gradle.kts">settings.gradle.kts</a></td>
+<td>بناء / Build</td>
+<td>اسم المشروع الجذري</td>
+<td>لا توجد مشاكل</td>
+<td>لا يحتاج</td>
+<td>—</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/docker-compose.yml">docker-compose.yml</a></td>
+<td>بنية تحتية / Infra</td>
+<td>حاوية PostgreSQL 15</td>
+<td>كلمة مرور ثابتة <code>password123</code></td>
+<td>استخدام متغيرات بيئة</td>
+<td>P2</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/resources/application.yaml">application.yaml</a></td>
+<td>إعداد / Config</td>
+<td>اتصال قاعدة البيانات، وضع تهيئة SQL</td>
+<td><strong>بيانات الاعتماد ثابتة ومحفوظة في VCS</strong>؛ غير مضاف لـ .gitignore</td>
+<td><strong>يجب إضافته لـ .gitignore واستخدام متغيرات بيئة</strong></td>
+<td><strong>P0</strong></td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/resources/application.yml.example">application.yml.example</a></td>
+<td>إعداد / Config</td>
+<td>قالب تكوين نموذجي</td>
+<td>ينقصه إعداد JWT secret</td>
+<td>إضافة placeholder لـ JWT</td>
+<td>P3</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/resources/schema.sql">schema.sql</a></td>
+<td>قاعدة بيانات / DB</td>
+<td>مخطط + بيانات أولية (جامعات، كليات، تخصصات)</td>
+<td><code>mode: always</code> يعيد التشغيل كل مرة؛ البيانات الأولية مخلوطة مع المخطط</td>
+<td>فصل البيانات الأولية؛ استخدام أداة migration</td>
+<td>P2</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/.gitignore">.gitignore</a></td>
+<td>إعداد / Config</td>
+<td>قواعد تجاهل Git</td>
+<td>ينقصه <code>application.yaml</code> ومجلد <code>uploads/</code></td>
+<td>إضافة الملفات الحساسة</td>
+<td><strong>P0</strong></td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/README.md">README.md</a></td>
+<td>توثيق / Docs</td>
+<td>تعليمات الإعداد</td>
+<td>بسيط جداً؛ لا يوجد توثيق API</td>
+<td>تحسين التوثيق</td>
+<td>P3</td>
+</tr>
+</tbody></table>
+<h3>Application Entry | نقطة دخول التطبيق</h3>
+<table>
+<thead>
+<tr>
+<th>File / الملف</th>
+<th>Purpose / الغرض</th>
+<th>Issues / المشاكل</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/WaraqaApplication.kt">WaraqaApplication.kt</a></td>
+<td>Spring Boot main class</td>
+<td>لا توجد مشاكل مهمة / No significant issues</td>
+</tr>
+</tbody></table>
+<h3>Controllers | المتحكمات</h3>
+<table>
+<thead>
+<tr>
+<th>File / الملف</th>
+<th>Purpose / الغرض</th>
+<th>Issues / المشاكل</th>
+<th>Priority / الأولوية</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/controller/AuthController.kt">AuthController.kt</a></td>
+<td>تسجيل، دخول، خروج / Register, Login, Logout</td>
+<td>معالج استثناءات محلي يكرر العام؛ تنسيق استجابة غير متسق بين login و register</td>
+<td>P2</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/controller/ListingController.kt">ListingController.kt</a></td>
+<td>إنشاء + بحث إعلانات / Create + search listings</td>
+<td>imports مكررة؛ نقاط نهائية ناقصة (GET by ID, PUT, DELETE)</td>
+<td>P2</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/controller/AcademicController.kt">AcademicController.kt</a></td>
+<td>بحث جامعات/كليات/تخصصات / University/faculty/major lookup</td>
+<td>يستدعي repository مباشرة (بدون service) — مقبول للقراءة فقط</td>
+<td>—</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/controller/FileUploadController.kt">FileUploadController.kt</a></td>
+<td>رفع صور / Image upload</td>
+<td><strong>URL ثابت <code>localhost:8080</code></strong>؛ لا يوجد حد لحجم الملف؛ لا يحتاج مصادقة</td>
+<td><strong>P1</strong></td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/controller/UserController.kt">UserController.kt</a></td>
+<td>ملف المستخدم / User profile</td>
+<td>يستدعي repository مباشرة؛ <code>ResponseEntity&lt;Any&gt;</code> غير محدد النوع</td>
+<td>P3</td>
+</tr>
+</tbody></table>
+<h3>DTOs | كائنات نقل البيانات</h3>
+<table>
+<thead>
+<tr>
+<th>File / الملف</th>
+<th>Purpose / الغرض</th>
+<th>Issues / المشاكل</th>
+<th>Priority / الأولوية</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/dto/RegisterRequest.kt">RegisterRequest.kt</a></td>
+<td>مدخلات التسجيل / Registration input</td>
+<td>جيد — annotations تحقق و JSON aliases</td>
+<td>—</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/dto/LoginRequest.kt">LoginRequest.kt</a></td>
+<td>مدخلات الدخول / Login input</td>
+<td>لا يوجد <code>@NotBlank</code> على email/password</td>
+<td>P3</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/dto/AuthResponse.kt">AuthResponse.kt</a></td>
+<td>استجابة الدخول مع token / Login response</td>
+<td>لا توجد مشاكل مهمة</td>
+<td>—</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/dto/CreateListingRequest.kt">CreateListingRequest.kt</a></td>
+<td>مدخلات إنشاء إعلان / Listing creation input</td>
+<td>بدون validation annotations (التحقق يدوي بالـ service) — مقبول</td>
+<td>—</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/dto/ListingResponseDto.kt">ListingResponseDto.kt</a></td>
+<td>مخرجات الإعلان / Listing output</td>
+<td>لا توجد مشاكل مهمة</td>
+<td>—</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/dto/CreateBookRequest.kt">CreateBookRequest.kt</a></td>
+<td>مدخلات إنشاء كتاب / Book creation input</td>
+<td><strong>يُشتبه أنه غير مستخدم</strong> — لا يوجد endpoint يستهلكه</td>
+<td>P2</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/dto/UpdateBookRequest.kt">UpdateBookRequest.kt</a></td>
+<td>مدخلات تحديث كتاب / Book update input</td>
+<td><strong>يُشتبه أنه غير مستخدم</strong> — لا يوجد endpoint يستهلكه</td>
+<td>P2</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/dto/BookResponseDto.kt">BookResponseDto.kt</a></td>
+<td>مخرجات كتالوج الكتب / Book catalog output</td>
+<td><strong>يُشتبه أنه غير مستخدم</strong> — لم يتم إنشاؤه في أي مكان</td>
+<td>P2</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/dto/BookDetailDto.kt">BookDetailDto.kt</a></td>
+<td>عرض تفصيلي للكتاب مع بيانات البائع / Detailed book view with seller info</td>
+<td><strong>يُشتبه أنه غير مستخدم</strong> — لا service/controller ينشئه</td>
+<td>P2</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/dto/UserProfileResponse.kt">UserProfileResponse.kt</a></td>
+<td>مخرجات ملف المستخدم / User profile output</td>
+<td>لا توجد مشاكل مهمة</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<h3>Models | النماذج</h3>
+<table>
+<thead>
+<tr>
+<th>File / الملف</th>
+<th>Purpose / الغرض</th>
+<th>Issues / المشاكل</th>
+<th>Priority / الأولوية</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/model/User.kt">User.kt</a></td>
+<td>كيان المستخدم / User entity</td>
+<td>كلمة المرور مخزنة بالنموذج (تظهر بكل السياقات)</td>
+<td>P3</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/model/Book.kt">Book.kt</a></td>
+<td>كيان كتالوج الكتب / Book catalog entity</td>
+<td>نظيف؛ لا توجد مشاكل مهمة</td>
+<td>—</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/model/Listing.kt">Listing.kt</a></td>
+<td>كيان الإعلان (بيع/تبادل) / Listing entity</td>
+<td>نظيف؛ column mappings صحيحة</td>
+<td>—</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/model/AcademicLookup.kt">AcademicLookup.kt</a></td>
+<td>جامعة، كلية، تخصص / University, Faculty, Major</td>
+<td>data classes بسيطة — جيدة للقراءة فقط</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<h3>Repositories | المستودعات</h3>
+<table>
+<thead>
+<tr>
+<th>File / الملف</th>
+<th>Purpose / الغرض</th>
+<th>Issues / المشاكل</th>
+<th>Priority / الأولوية</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/repository/UserRepository.kt">UserRepository.kt</a></td>
+<td>CRUD للمستخدمين (Spring Data)</td>
+<td>يستخدم <code>CrudRepository</code> بينما الباقي يستخدم JDBC template — غير متسق لكن يعمل</td>
+<td>—</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/repository/BookRepository.kt">BookRepository.kt</a></td>
+<td>CRUD للكتب (JDBC template)</td>
+<td><code>findAll()</code> يستخدم RowMapper مختلف ينقصه حقل <code>edition</code>؛ رسالة خطأ بالعربي بـ <code>save()</code></td>
+<td>P2</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/repository/ListingRepository.kt">ListingRepository.kt</a></td>
+<td>CRUD + بحث إعلانات (JDBC template)</td>
+<td><strong><code>findListings()</code> و <code>findListingsWithFilters()</code> دوال مكررة</strong>؛ <code>findListingsWithFilters</code> يستخدم RowMapper مختلف <strong>ينقصه <code>imagesUrl</code>، <code>viewsCount</code>، <code>savesCount</code>، <code>publishedAt</code></strong>؛ parameter <code>subType</code> لا يُستخدم بالاستعلام</td>
+<td><strong>P1</strong></td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/repository/AcademicRepository.kt">AcademicRepository.kt</a></td>
+<td>بحث جامعات/كليات/تخصصات (JDBC template)</td>
+<td>نظيف؛ استعلامات مُعَلّمة صحيحة</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<h3>Services | الخدمات</h3>
+<table>
+<thead>
+<tr>
+<th>File / الملف</th>
+<th>Purpose / الغرض</th>
+<th>Issues / المشاكل</th>
+<th>Priority / الأولوية</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/service/AuthService.kt">AuthService.kt</a></td>
+<td>تسجيل، دخول، خروج / Registration, login, logout</td>
+<td><code>RegistrationException</code> مُعرّف داخل ملف الـ service بدل حزمة exception؛ <code>clearContext()</code> بلا فائدة</td>
+<td>P3</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/service/BookService.kt">BookService.kt</a></td>
+<td>عمليات كتالوج الكتب / Book catalog operations</td>
+<td><strong>غير مستخدم</strong> — 3 دوال، لا يتم استدعاء أي منها من أي controller</td>
+<td>P2</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/service/ListingService.kt">ListingService.kt</a></td>
+<td>إنشاء + بحث إعلانات / Create + search listings</td>
+<td><strong>مشكلة N+1</strong> بـ <code>getListings()</code>؛ يستخدم <code>SecurityContextHolder</code> مباشرة بدل <code>SecurityUtils</code>؛ دالة <code>createListing</code> كبيرة (~107 أسطر)</td>
+<td><strong>P1</strong></td>
+</tr>
+</tbody></table>
+<h3>Security | الأمان</h3>
+<table>
+<thead>
+<tr>
+<th>File / الملف</th>
+<th>Purpose / الغرض</th>
+<th>Issues / المشاكل</th>
+<th>Priority / الأولوية</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/security/SecurityConfig.kt">SecurityConfig.kt</a></td>
+<td>سلسلة الفلاتر، CORS، قواعد المسارات</td>
+<td>CORS يسمح فقط بـ localhost؛ endpoint الرفع عام (بدون مصادقة)</td>
+<td>P1</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/security/JwtUtils.kt">JwtUtils.kt</a></td>
+<td>توليد/تحقق التوكن / Token generation/validation</td>
+<td><strong>مفتاح JWT ثابت بالكود المصدري</strong></td>
+<td><strong>P0</strong></td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/security/JwtAuthenticationFilter.kt">JwtAuthenticationFilter.kt</a></td>
+<td>استخلاص JWT من الـ header</td>
+<td>تنفيذ نظيف</td>
+<td>—</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/security/SecurityUtils.kt">SecurityUtils.kt</a></td>
+<td>الحصول على email/ID المستخدم الحالي</td>
+<td><code>getCurrentUserId()</code> يعمل استعلام DB كل مرة — غير مُخَزَّن مؤقتاً</td>
+<td>P3</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/security/TokenBlacklistService.kt">TokenBlacklistService.kt</a></td>
+<td>قائمة سوداء بالذاكرة / In-memory blacklist</td>
+<td><strong>القائمة تُفقد عند إعادة التشغيل</strong>؛ تنمو بلا حدود (تسرب ذاكرة)</td>
+<td><strong>P1</strong></td>
+</tr>
+</tbody></table>
+<h3>Exceptions | الاستثناءات</h3>
+<table>
+<thead>
+<tr>
+<th>File / الملف</th>
+<th>Purpose / الغرض</th>
+<th>Issues / المشاكل</th>
+<th>Priority / الأولوية</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/exception/GlobalExceptionHandler.kt">GlobalExceptionHandler.kt</a></td>
+<td>ربط استثناءات بـ HTTP responses</td>
+<td>رسالة ثابتة &quot;Book not found&quot;؛ لا يعالج <code>BadCredentialsException</code></td>
+<td>P2</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/exception/BadRequestException.kt">BadRequestException.kt</a></td>
+<td>400 Bad Request</td>
+<td><strong>يُشتبه أنه غير مستخدم</strong> — لا يُرمى في أي مكان</td>
+<td>P3</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/exception/ForbiddenException.kt">ForbiddenException.kt</a></td>
+<td>403 Forbidden</td>
+<td>مستخدم بـ <code>ListingService.createListing()</code></td>
+<td>—</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/exception/NotFoundException.kt">NotFoundException.kt</a></td>
+<td>404 Not Found</td>
+<td>مستخدم بـ <code>BookService</code></td>
+<td>—</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/exception/ValidationException.kt">ValidationException.kt</a></td>
+<td>خريطة أخطاء التحقق / Validation errors map</td>
+<td>مستخدم بـ <code>ListingService</code></td>
+<td>—</td>
+</tr>
+</tbody></table>
+<h3>Config | الإعداد</h3>
+<table>
+<thead>
+<tr>
+<th>File / الملف</th>
+<th>Purpose / الغرض</th>
+<th>Issues / المشاكل</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/config/WebConfig.kt">WebConfig.kt</a></td>
+<td>تقديم الملفات المرفوعة كموارد ثابتة</td>
+<td>لا توجد مشاكل مهمة</td>
+</tr>
+</tbody></table>
+<h3>Tests | الاختبارات</h3>
+<table>
+<thead>
+<tr>
+<th>File / الملف</th>
+<th>Purpose / الغرض</th>
+<th>Issues / المشاكل</th>
+<th>Priority / الأولوية</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/test/kotlin/com/waraqa/backend/WaraqaApplicationTests.kt">WaraqaApplicationTests.kt</a></td>
+<td>اختبار تحميل السياق / Context load smoke test</td>
+<td>يحتاج PostgreSQL يكون شغال</td>
+<td>—</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/test/kotlin/com/waraqa/backend/SecurityTest.kt">SecurityTest.kt</a></td>
+<td>اختبار تكاملي لتدفق المصادقة + القائمة السوداء</td>
+<td>يحتاج PostgreSQL؛ بنية جيدة</td>
+<td>—</td>
+</tr>
+<tr>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/test/kotlin/com/waraqa/backend/repository/BookRepositoryTest.kt">BookRepositoryTest.kt</a></td>
+<td>اختبار حفظ/استرجاع كتاب</td>
+<td><strong>معطل</strong> — يشير لخصائص <code>Book.price</code>، <code>Book.publishedAt</code>، <code>Book.coverImage</code>، <code>Book.publisherId</code> و دالة <code>findByPublisherId()</code> التي <strong>لا توجد</strong> بالنموذج الحالي</td>
+<td><strong>P1</strong></td>
+</tr>
+</tbody></table>
+<hr>
+<h2>5. Main Application Flows | تدفقات التطبيق الرئيسية</h2>
+<h3>Flow 1: User Registration | تسجيل المستخدم</h3>
+<pre><code>Client POST /api/auth/register
+  → JwtAuthenticationFilter (يمر — endpoint عام)
+  → SecurityConfig (permitAll لـ /api/auth/**)
+  → AuthController.register()
+    → @Valid يتحقق من RegisterRequest (الاسم، الإيميل، كلمة المرور، الهاتف)
+    → AuthService.register()
+      → UserRepository.existsByEmail() — فحص التكرار
+      → UserRepository.existsByPhoneNumber() — فحص التكرار
+      → PasswordEncoder.encode() — تشفير كلمة المرور
+      → UserRepository.save() — حفظ المستخدم
+  → يُرجع 201 {success: true, message: &quot;Registration successful&quot;}
+</code></pre>
+<h3>Flow 2: User Login | تسجيل الدخول</h3>
+<pre><code>Client POST /api/auth/login
+  → AuthController.login()
+    → AuthService.login()
+      → UserRepository.findByEmail()
+      → PasswordEncoder.matches() — التحقق من كلمة المرور
+      → JwtUtils.generateToken() — إنشاء JWT
+  → يُرجع 200 AuthResponse {token, userId, name, email, phoneNumber}
+</code></pre>
+<h3>Flow 3: Create Listing (Authenticated) | إنشاء إعلان (يحتاج مصادقة)</h3>
+<pre><code>Client POST /listings (مع Authorization: Bearer &lt;token&gt;)
+  → JwtAuthenticationFilter
+    → JwtUtils.validateToken()
+    → TokenBlacklistService.isBlacklisted()
+    → يُعيّن SecurityContext مع email كـ principal
+  → ListingController.createListing()
+    → ListingService.createListing()
+      → SecurityContextHolder → يحصل على email المستخدم
+      → UserRepository.findByEmail() → يحصل على ID المستخدم
+      → تحقق يدوي (عنوان، صورة، تصنيف، سعر، حالة، إلخ)
+      → BookRepository.findByTitleAndAuthor() — إعادة استخدام كتاب موجود أو إنشاء جديد
+      → BookRepository.save() — إذا كتاب جديد
+      → ListingRepository.save() — إنشاء إعلان مربوط بالكتاب
+  → يُرجع 201 ListingResponseDto
+</code></pre>
+<h3>Flow 4: Search Listings (Public) | بحث الإعلانات (عام)</h3>
+<pre><code>Client GET /listings?search=X&amp;category=Y&amp;university_id=Z&amp;sort=newest&amp;page=0&amp;limit=8
+  → ListingController.getListings()
+    → ListingService.getListings()
+      → ListingRepository.findListingsWithFilters() — استعلام SQL JOIN
+      → ⚠️ لكل إعلان: BookRepository.findById() — مشكلة N+1
+      → يُحوّل لـ List&lt;ListingResponseDto&gt;
+  → يُرجع 200 List&lt;ListingResponseDto&gt;
+</code></pre>
+<h3>Flow 5: Academic Lookup (Public) | البحث الأكاديمي (عام)</h3>
+<pre><code>Client GET /api/universities
+  → AcademicController.getUniversities()
+    → AcademicRepository.findAllUniversities()
+  → يُرجع 200 List&lt;University&gt;
+
+Client GET /api/faculties?university_id=1
+  → AcademicController.getFaculties()
+    → AcademicRepository.findFaculties(universityId=1)
+  → يُرجع 200 List&lt;Faculty&gt;
+</code></pre>
+<h3>Flow 6: File Upload (Public — NO AUTH) | رفع ملف (عام — بدون مصادقة)</h3>
+<pre><code>Client POST /api/upload (multipart file)
+  → FileUploadController.uploadFile()
+    → يتحقق أنه غير فارغ + نوع image
+    → يولّد اسم UUID
+    → يحفظ بنظام الملفات uploads/
+  → يُرجع 200 {url: &quot;http://localhost:8080/uploads/&lt;uuid&gt;.ext&quot;}
+</code></pre>
+<hr>
+<h2>6. Findings by Category | النتائج حسب الفئة</h2>
+<h3>6.1 Architecture | الهيكلية</h3>
+<table>
+<thead>
+<tr>
+<th>Severity / الخطورة</th>
+<th>Finding / النتيجة</th>
+<th>Location / الموقع</th>
+<th>Recommendation / التوصية</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>متوسط / Medium</td>
+<td>أنماط استمرارية مختلطة (CrudRepository مع JdbcTemplate)</td>
+<td><code>UserRepository</code> مقابل الباقي</td>
+<td>مقبول — يُوَثّق النمط</td>
+</tr>
+<tr>
+<td>منخفض / Low</td>
+<td>بعض الـ controllers تتجاوز طبقة الـ service</td>
+<td><code>AcademicController</code>، <code>UserController</code></td>
+<td>مقبول لعمليات القراءة البسيطة</td>
+</tr>
+<tr>
+<td>متوسط / Medium</td>
+<td>اعتماد JPA غير مستخدم</td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/build.gradle.kts#L23">build.gradle.kts:23</a></td>
+<td>إزالة <code>spring-boot-starter-data-jpa</code></td>
+</tr>
+<tr>
+<td>منخفض / Low</td>
+<td><code>RegistrationException</code> مُعرّف بملف <code>AuthService.kt</code> بدل حزمة <code>exception</code></td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/service/AuthService.kt#L15-L18">AuthService.kt:15-18</a></td>
+<td>نقله لحزمة exception</td>
+</tr>
+</tbody></table>
+<h3>6.2 Business Logic | منطق الأعمال</h3>
+<table>
+<thead>
+<tr>
+<th>Severity / الخطورة</th>
+<th>Finding / النتيجة</th>
+<th>Location / الموقع</th>
+<th>Recommendation / التوصية</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>عالي / High</strong></td>
+<td><strong>مشكلة N+1</strong> بـ <code>getListings()</code> — كل إعلان يستعلم عن كتابه بشكل فردي</td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/service/ListingService.kt#L156">ListingService.kt:156</a></td>
+<td>إنشاء استعلام JOIN يُرجع بيانات الإعلان والكتاب معاً</td>
+</tr>
+<tr>
+<td>متوسط / Medium</td>
+<td><code>createListing()</code> دالة 107 سطر تخلط التحقق مع الاستمرارية</td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/service/ListingService.kt#L24-L131">ListingService.kt:24-131</a></td>
+<td>استخلاص التحقق لدالة منفصلة</td>
+</tr>
+<tr>
+<td>متوسط / Medium</td>
+<td><code>ListingService</code> يستخدم <code>SecurityContextHolder</code> مباشرة بدل <code>SecurityUtils</code></td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/service/ListingService.kt#L26">ListingService.kt:26</a></td>
+<td>حقن واستخدام <code>SecurityUtils</code> للتناسق</td>
+</tr>
+<tr>
+<td>متوسط / Medium</td>
+<td><code>BookService</code> موجود لكن لا يُستدعى من أي controller</td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/service/BookService.kt">BookService.kt</a></td>
+<td>ربطه بـ controller أو إزالته</td>
+</tr>
+<tr>
+<td>منخفض / Low</td>
+<td><code>AuthService.logout()</code> يستدعي <code>SecurityContextHolder.clearContext()</code> بلا فائدة في JWT stateless</td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/service/AuthService.kt#L69">AuthService.kt:69</a></td>
+<td>إزالة الاستدعاء</td>
+</tr>
+</tbody></table>
+<h3>6.3 API | واجهة البرمجة</h3>
+<table>
+<thead>
+<tr>
+<th>Severity / الخطورة</th>
+<th>Finding / النتيجة</th>
+<th>Location / الموقع</th>
+<th>Recommendation / التوصية</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>متوسط / Medium</td>
+<td>بادئات مسار API غير متسقة: <code>/api/auth</code>، <code>/api</code>، <code>/listings</code> (بدون <code>/api</code>)</td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/controller/ListingController.kt#L15">ListingController.kt:15</a></td>
+<td>توحيد لـ <code>/api/listings</code></td>
+</tr>
+<tr>
+<td>متوسط / Medium</td>
+<td>تنسيقات استجابة غير متسقة: register يُرجع <code>{success, message}</code>، login يُرجع <code>AuthResponse</code> مباشرة</td>
+<td>عدة controllers</td>
+<td>تعريف غلاف استجابة موحد</td>
+</tr>
+<tr>
+<td>متوسط / Medium</td>
+<td><code>AuthController</code> لديه <code>@ExceptionHandler</code> محلي يتنافس مع <code>GlobalExceptionHandler</code></td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/controller/AuthController.kt#L52-L76">AuthController.kt:52-76</a></td>
+<td>نقله لـ GlobalExceptionHandler</td>
+</tr>
+<tr>
+<td>منخفض / Low</td>
+<td>نقاط نهائية ناقصة: لا يوجد GET <code>/listings/{id}</code>، لا PUT/DELETE للإعلانات</td>
+<td><code>ListingController</code></td>
+<td>إضافتها عند الحاجة</td>
+</tr>
+<tr>
+<td>منخفض / Low</td>
+<td>لا يوجد معلومات صفحات (عدد كلي، إجمالي الصفحات)</td>
+<td><code>ListingController.getListings()</code></td>
+<td>إضافة غلاف pagination</td>
+</tr>
+</tbody></table>
+<h3>6.4 Database | قاعدة البيانات</h3>
+<table>
+<thead>
+<tr>
+<th>Severity / الخطورة</th>
+<th>Finding / النتيجة</th>
+<th>Location / الموقع</th>
+<th>Recommendation / التوصية</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>عالي / High</strong></td>
+<td><strong>دوال استعلام مكررة</strong>: <code>findListings()</code> و <code>findListingsWithFilters()</code> بـ <code>ListingRepository</code> تعمل نفس الشيء تقريباً</td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/repository/ListingRepository.kt#L95-L211">ListingRepository.kt:95-211</a></td>
+<td>إزالة <code>findListings()</code>؛ إصلاح <code>findListingsWithFilters()</code></td>
+</tr>
+<tr>
+<td><strong>عالي / High</strong></td>
+<td><code>findListingsWithFilters()</code> يستخدم RowMapper مُضمّن <strong>ينقصه</strong> حقول <code>imagesUrl</code>، <code>viewsCount</code>، <code>savesCount</code>، <code>publishedAt</code></td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/repository/ListingRepository.kt#L195-L210">ListingRepository.kt:195-210</a></td>
+<td>استخدام الـ <code>rowMapper</code> على مستوى الكلاس</td>
+</tr>
+<tr>
+<td>متوسط / Medium</td>
+<td><code>findListingsWithFilters()</code> يقبل parameter <code>subType</code> لكن <strong>لا يستخدمه بالـ SQL</strong></td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/repository/ListingRepository.kt#L149">ListingRepository.kt:149</a></td>
+<td>إما تطبيق الفلتر أو إزالة الـ parameter</td>
+</tr>
+<tr>
+<td>متوسط / Medium</td>
+<td><code>BookRepository.findAll()</code> يستخدم RowMapper مُضمّن <strong>ينقصه</strong> حقل <code>edition</code></td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/repository/BookRepository.kt#L71-L82">BookRepository.kt:71-82</a></td>
+<td>استخدام الـ <code>rowMapper</code> على مستوى الكلاس</td>
+</tr>
+<tr>
+<td>منخفض / Low</td>
+<td>لا يوجد index على <code>listings.book_id</code> رغم أنه FK مستخدم بالـ JOINs</td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/resources/schema.sql">schema.sql</a></td>
+<td>إضافة <code>CREATE INDEX IF NOT EXISTS idx_listings_book_id ON listings(book_id)</code></td>
+</tr>
+</tbody></table>
+<h3>6.5 Security | الأمان</h3>
+<table>
+<thead>
+<tr>
+<th>Severity / الخطورة</th>
+<th>Finding / النتيجة</th>
+<th>Location / الموقع</th>
+<th>Recommendation / التوصية</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>حرج / Critical</strong></td>
+<td><strong>مفتاح JWT ثابت بالكود</strong>: <code>&quot;waraqa_dev_secret_key_must_be_at_least_32_bytes_long_123456&quot;</code></td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/security/JwtUtils.kt#L14">JwtUtils.kt:14</a></td>
+<td>نقله لـ <code>application.yaml</code> / متغير بيئة</td>
+</tr>
+<tr>
+<td><strong>حرج / Critical</strong></td>
+<td><strong>بيانات اعتماد قاعدة البيانات محفوظة بـ VCS</strong>: <code>password123</code> بـ <code>application.yaml</code> غير مضاف لـ gitignore</td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/resources/application.yaml#L5">application.yaml:5</a></td>
+<td>إضافة <code>application.yaml</code> لـ <code>.gitignore</code>؛ استخدام متغيرات بيئة</td>
+</tr>
+<tr>
+<td><strong>عالي / High</strong></td>
+<td><strong>endpoint رفع الملفات لا يحتاج مصادقة</strong> — أي شخص يقدر يرفع ملفات على السيرفر</td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/security/SecurityConfig.kt#L63">SecurityConfig.kt:63</a></td>
+<td>طلب مصادقة لـ <code>/api/upload</code></td>
+</tr>
+<tr>
+<td><strong>عالي / High</strong></td>
+<td><strong>القائمة السوداء بالذاكرة</strong> — كل التوكنات المحظورة تُفقد عند إعادة تشغيل السيرفر</td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/security/TokenBlacklistService.kt#L8">TokenBlacklistService.kt:8</a></td>
+<td>الحفظ بـ DB أو Redis</td>
+</tr>
+<tr>
+<td><strong>عالي / High</strong></td>
+<td><strong>القائمة السوداء تنمو بلا حدود</strong> — لا تنظيف TTL، تسرب ذاكرة محتمل</td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/security/TokenBlacklistService.kt#L8">TokenBlacklistService.kt:8</a></td>
+<td>إضافة تنظيف للتوكنات المنتهية</td>
+</tr>
+<tr>
+<td>متوسط / Medium</td>
+<td><strong>لا يوجد قائمة بيضاء لامتدادات الملفات</strong> عند الرفع — يقبل أي <code>image/*</code> MIME type يمكن تزويره</td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/controller/FileUploadController.kt#L30">FileUploadController.kt:30</a></td>
+<td>التحقق من الامتداد + magic bytes</td>
+</tr>
+<tr>
+<td>متوسط / Medium</td>
+<td><strong>لا يوجد حد لحجم الملف</strong> عند الرفع</td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/controller/FileUploadController.kt">FileUploadController.kt</a></td>
+<td>تكوين <code>spring.servlet.multipart.max-file-size</code></td>
+</tr>
+<tr>
+<td>متوسط / Medium</td>
+<td><strong>URL رفع ثابت</strong> <code>http://localhost:8080</code> — لن يعمل بالإنتاج</td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/controller/FileUploadController.kt#L42">FileUploadController.kt:42</a></td>
+<td>استخدام خاصية تكوين أو <code>ServletUriComponentsBuilder</code></td>
+</tr>
+</tbody></table>
+<h3>6.6 Code Quality | جودة الكود</h3>
+<table>
+<thead>
+<tr>
+<th>Severity / الخطورة</th>
+<th>Finding / النتيجة</th>
+<th>Location / الموقع</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>متوسط / Medium</td>
+<td>رسائل خطأ عربية مخلوطة مع إنجليزية بالـ repositories</td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/repository/BookRepository.kt#L40">BookRepository.kt:40</a>، <a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/repository/ListingRepository.kt#L76">ListingRepository.kt:76</a></td>
+</tr>
+<tr>
+<td>منخفض / Low</td>
+<td>تعليق متبقي <code>// &lt;-- Added missing closing brace here!</code></td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/controller/AuthController.kt#L76">AuthController.kt:76</a></td>
+</tr>
+<tr>
+<td>منخفض / Low</td>
+<td><code>MapSqlParameterSource</code> مكتوب بالاسم الكامل بدل import</td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/repository/ListingRepository.kt#L160">ListingRepository.kt:160</a></td>
+</tr>
+</tbody></table>
+<h3>6.7 Testing | الاختبارات</h3>
+<table>
+<thead>
+<tr>
+<th>Severity / الخطورة</th>
+<th>Finding / النتيجة</th>
+<th>Recommendation / التوصية</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>عالي / High</strong></td>
+<td><strong><code>BookRepositoryTest</code> معطل</strong> — يشير لخصائص من نموذج Book قديم (<code>price</code>، <code>publishedAt</code>، <code>coverImage</code>، <code>publisherId</code>) ودالة <code>findByPublisherId()</code> غير موجودة</td>
+<td>إعادة كتابة الاختبار للنموذج الحالي أو حذفه</td>
+</tr>
+<tr>
+<td>متوسط / Medium</td>
+<td>لا يوجد اختبارات لـ <code>ListingService</code> (أعقد service)</td>
+<td>إضافة اختبارات وحدة لمنطق التحقق</td>
+</tr>
+<tr>
+<td>متوسط / Medium</td>
+<td>لا يوجد اختبارات لدوال استعلام <code>ListingRepository</code></td>
+<td>إضافة اختبارات تكاملية لاستعلامات البحث</td>
+</tr>
+<tr>
+<td>منخفض / Low</td>
+<td>كل الاختبارات تحتاج PostgreSQL شغال (لا testcontainers أو H2)</td>
+<td>إضافة Testcontainers لـ CI</td>
+</tr>
+</tbody></table>
+<h3>6.8 Dependencies &amp; Configuration | الاعتمادات والتكوين</h3>
+<table>
+<thead>
+<tr>
+<th>Severity / الخطورة</th>
+<th>Finding / النتيجة</th>
+<th>Recommendation / التوصية</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>متوسط / Medium</td>
+<td><strong>اعتماد غير مستخدم</strong>: <code>spring-boot-starter-data-jpa</code> — المشروع يستخدم JDBC مش JPA. يسحب Hibernate وكل اعتماداته بدون فائدة</td>
+<td>إزالته</td>
+</tr>
+<tr>
+<td>منخفض / Low</td>
+<td>مجلد <code>uploads/</code> (30 صورة، ~8MB) محفوظ بـ git</td>
+<td>إضافته لـ <code>.gitignore</code></td>
+</tr>
+</tbody></table>
+<hr>
+<h2>7. What Is Already Good | ما هو جيد ولا يحتاج تغيير</h2>
+<blockquote>
+<p>[!TIP]
+<strong>EN:</strong> The following should NOT be unnecessarily refactored.
+<strong>AR:</strong> التالي لا يجب إعادة هيكلته بدون سبب مقنع.</p>
+</blockquote>
+<ol>
+<li><p><strong>فصل الكتب عن الإعلانات / Book/Listing separation</strong> — قرار تصميمي جيد. جدول <code>books</code> لبيانات الكتاب الثابتة، وجدول <code>listings</code> لعروض البيع/التبادل. يمنع تكرار بيانات الكتاب عبر الإعلانات.</p>
+</li>
+<li><p><strong>Kotlin data classes للنماذج والـ DTOs</strong> — نظيفة، اصطلاحية Kotlin. غير قابلة للتعديل (immutable)، مختصرة.</p>
+</li>
+<li><p><strong>تحقق <code>RegisterRequest</code></strong> — استخدام جيد لـ <code>@NotBlank</code>، <code>@Email</code>، <code>@Pattern</code> مع رسائل واضحة و <code>@JsonAlias</code> لمرونة الإدخال.</p>
+</li>
+<li><p><strong>تدفق مصادقة JWT</strong> — <code>JwtAuthenticationFilter</code> → <code>JwtUtils</code> → <code>SecurityConfig</code> مُهيكل جيداً، يتبع أنماط Spring Security بشكل صحيح.</p>
+</li>
+<li><p><strong><code>AcademicRepository</code></strong> — نظيف، منظم، استعلامات مُعَلّمة صحيحة وRowMappers متسقة.</p>
+</li>
+<li><p><strong><code>SecurityTest</code></strong> — اختبار تكاملي جيد البنية يغطي endpoints العامة، الوصول المصادق، وتعطيل التوكن بعد الخروج.</p>
+</li>
+<li><p><strong>تصميم المخطط (schema)</strong> — استخدام صحيح للمفاتيح الأجنبية، القيود (<code>UNIQUE</code>، <code>NOT NULL</code>)، الفهارس، و <code>ON CONFLICT</code> لبيانات أولية متكررة الإدخال.</p>
+</li>
+<li><p><strong>منطق التحقق بـ <code>ListingService.createListing()</code></strong> — تحقق شامل من متطلبات كل تصنيف (أكاديمي مقابل عام)، قيود نوع الإعلان، وقواعد السعر.</p>
+</li>
+<li><p><strong><code>WebConfig</code> static resource handler</strong> — تنفيذ بسيط وصحيح لتقديم الملفات المرفوعة.</p>
+</li>
+<li><p><strong>تفويض مسارات <code>SecurityConfig</code></strong> — فصل واضح بين endpoints العامة والمحمية.</p>
+</li>
+</ol>
+<hr>
+<h2>8. Refactoring Candidates | مرشحات إعادة الهيكلة</h2>
+<h3>P0 — حرج / Critical (يجب الإصلاح فوراً / Must Fix Immediately)</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>File(s) / الملفات</th>
+<th>Problem / المشكلة</th>
+<th>Proposed Change / التغيير المقترح</th>
+<th>Risk / المخاطر</th>
+<th>Complexity / التعقيد</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/security/JwtUtils.kt">JwtUtils.kt</a></td>
+<td>مفتاح JWT ثابت بالكود / Hardcoded JWT secret</td>
+<td>نقله لـ <code>application.yaml</code> كـ <code>jwt.secret</code>؛ حقنه بـ <code>@Value</code></td>
+<td>منخفض — التوكنات الحالية ستُبطل إذا تغير المفتاح</td>
+<td>صغير / Small</td>
+</tr>
+<tr>
+<td>2</td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/resources/application.yaml">application.yaml</a>، <a href="file:///c:/Users/USER/CodeReview/Waraqa/.gitignore">.gitignore</a></td>
+<td>بيانات اعتماد DB محفوظة بـ VCS</td>
+<td>إضافة <code>application.yaml</code> و <code>uploads/</code> لـ <code>.gitignore</code>؛ استخدام <code>application.yml.example</code> كقالب</td>
+<td>منخفض — المطورون يحتاجون إعادة إنشاء الإعداد المحلي</td>
+<td>صغير / Small</td>
+</tr>
+</tbody></table>
+<h3>P1 — عالي / High</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>File(s) / الملفات</th>
+<th>Problem / المشكلة</th>
+<th>Proposed Change / التغيير المقترح</th>
+<th>Risk / المخاطر</th>
+<th>Complexity / التعقيد</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>3</td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/repository/ListingRepository.kt">ListingRepository.kt</a></td>
+<td>دوال <code>findListings()</code> / <code>findListingsWithFilters()</code> مكررة؛ RowMapper ناقص</td>
+<td>إزالة <code>findListings()</code>؛ إصلاح <code>findListingsWithFilters()</code> لاستخدام <code>rowMapper</code> على مستوى الكلاس</td>
+<td>منخفض — <code>findListings</code> غير مُستدعاة</td>
+<td>صغير / Small</td>
+</tr>
+<tr>
+<td>4</td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/service/ListingService.kt">ListingService.kt</a></td>
+<td>مشكلة N+1 بـ <code>getListings()</code> — <code>bookRepository.findById()</code> لكل إعلان</td>
+<td>إنشاء دالة repository تعمل JOIN بين listings+books؛ أو جلب الكتب دفعة واحدة</td>
+<td>متوسط — يغير واجهة الـ repository</td>
+<td>متوسط / Medium</td>
+</tr>
+<tr>
+<td>5</td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/security/TokenBlacklistService.kt">TokenBlacklistService.kt</a></td>
+<td>القائمة السوداء بالذاكرة تُفقد عند الإعادة؛ لا تنظيف TTL</td>
+<td>كحد أدنى: إضافة تنظيف مجدول. المثالي: حفظ بـ DB أو Redis</td>
+<td>منخفض</td>
+<td>متوسط / Medium</td>
+</tr>
+<tr>
+<td>6</td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/security/SecurityConfig.kt">SecurityConfig.kt</a></td>
+<td>endpoint الرفع يسمح برفع ملفات بدون مصادقة</td>
+<td>نقل <code>/api/upload</code> للقواعد المصادق عليها</td>
+<td>منخفض</td>
+<td>صغير / Small</td>
+</tr>
+<tr>
+<td>7</td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/test/kotlin/com/waraqa/backend/repository/BookRepositoryTest.kt">BookRepositoryTest.kt</a></td>
+<td>الاختبار يشير لخصائص من نموذج Book قديم — لن يعمل compile</td>
+<td>إعادة كتابة الاختبار للنموذج الحالي (بدون price, publisherId)</td>
+<td>لا شيء — الاختبار معطل أصلاً</td>
+<td>صغير / Small</td>
+</tr>
+<tr>
+<td>8</td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/controller/FileUploadController.kt">FileUploadController.kt</a></td>
+<td>URL ثابت <code>http://localhost:8080</code></td>
+<td>استخدام <code>@Value</code> أو <code>ServletUriComponentsBuilder</code></td>
+<td>منخفض</td>
+<td>صغير / Small</td>
+</tr>
+</tbody></table>
+<h3>P2 — متوسط / Medium</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>File(s) / الملفات</th>
+<th>Problem / المشكلة</th>
+<th>Proposed Change / التغيير المقترح</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>9</td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/controller/ListingController.kt">ListingController.kt</a></td>
+<td>بادئة API غير متسقة (<code>/listings</code> مقابل <code>/api/...</code>)</td>
+<td>تغيير لـ <code>/api/listings</code>؛ تحديث SecurityConfig</td>
+</tr>
+<tr>
+<td>10</td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/build.gradle.kts">build.gradle.kts</a></td>
+<td>اعتماد <code>data-jpa</code> غير مستخدم</td>
+<td>إزالة <code>spring-boot-starter-data-jpa</code></td>
+</tr>
+<tr>
+<td>11</td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/repository/BookRepository.kt">BookRepository.kt</a></td>
+<td><code>findAll()</code> RowMapper مُضمّن ينقصه <code>edition</code></td>
+<td>استخدام <code>rowMapper</code> على مستوى الكلاس</td>
+</tr>
+<tr>
+<td>12</td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/controller/AuthController.kt">AuthController.kt</a></td>
+<td><code>@ExceptionHandler</code> محلي يكرر المعالج العام</td>
+<td>نقل معالجة <code>MethodArgumentNotValidException</code> لـ <code>GlobalExceptionHandler</code></td>
+</tr>
+<tr>
+<td>13</td>
+<td>DTOs: <code>CreateBookRequest</code>، <code>UpdateBookRequest</code>، <code>BookResponseDto</code>، <code>BookDetailDto</code></td>
+<td>يُشتبه أنها غير مستخدمة</td>
+<td>التحقق؛ الإزالة إذا كانت كود ميت فعلاً</td>
+</tr>
+</tbody></table>
+<h3>P3 — منخفض / Low</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>File(s) / الملفات</th>
+<th>Problem / المشكلة</th>
+<th>Proposed Change / التغيير المقترح</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>14</td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/service/AuthService.kt">AuthService.kt</a></td>
+<td><code>RegistrationException</code> مُعرّف بملف الـ service</td>
+<td>نقله لحزمة <code>exception</code></td>
+</tr>
+<tr>
+<td>15</td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/service/AuthService.kt">AuthService.kt</a></td>
+<td><code>clearContext()</code> بـ <code>logout()</code> بلا فائدة</td>
+<td>إزالة الاستدعاء</td>
+</tr>
+<tr>
+<td>16</td>
+<td>عدة repositories</td>
+<td>رسائل خطأ عربية (&quot;فشل استرجاع الـ ID&quot;)</td>
+<td>توحيد اللغة</td>
+</tr>
+<tr>
+<td>17</td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/controller/AuthController.kt#L76">AuthController.kt:76</a></td>
+<td>تعليق تصحيح أخطاء: <code>// &lt;-- Added missing closing brace here!</code></td>
+<td>إزالته</td>
+</tr>
+<tr>
+<td>18</td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/dto/LoginRequest.kt">LoginRequest.kt</a></td>
+<td>لا يوجد <code>@NotBlank</code> على email/password</td>
+<td>إضافة تحقق</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>9. Quick Wins | مكاسب سريعة</h2>
+<p><strong>EN:</strong> Low-risk, low-effort changes with high benefit.
+<strong>AR:</strong> تغييرات منخفضة المخاطر والجهد مع فائدة عالية.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Change / التغيير</th>
+<th>Effort / الجهد</th>
+<th>Benefit / الفائدة</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>إضافة <code>application.yaml</code> و <code>uploads/</code> لـ <code>.gitignore</code></td>
+<td>2 دقيقة</td>
+<td>منع تسريب بيانات الاعتماد</td>
+</tr>
+<tr>
+<td>2</td>
+<td>إزالة <code>findListings()</code> من <code>ListingRepository</code> (مؤكد غير مستخدم)</td>
+<td>5 دقائق</td>
+<td>إزالة الارتباك والكود الميت</td>
+</tr>
+<tr>
+<td>3</td>
+<td>إصلاح <code>findListingsWithFilters()</code> لاستخدام <code>rowMapper</code> على مستوى الكلاس</td>
+<td>5 دقائق</td>
+<td>إصلاح الحقول المفقودة بنتائج البحث</td>
+</tr>
+<tr>
+<td>4</td>
+<td>إصلاح <code>BookRepository.findAll()</code> لاستخدام <code>rowMapper</code> على مستوى الكلاس</td>
+<td>2 دقيقة</td>
+<td>إصلاح حقل <code>edition</code> المفقود</td>
+</tr>
+<tr>
+<td>5</td>
+<td>إزالة تعليق التصحيح بـ <code>AuthController</code></td>
+<td>1 دقيقة</td>
+<td>نظافة الكود</td>
+</tr>
+<tr>
+<td>6</td>
+<td>إزالة <code>clearContext()</code> من <code>AuthService.logout()</code></td>
+<td>1 دقيقة</td>
+<td>إزالة كود مُضلل</td>
+</tr>
+<tr>
+<td>7</td>
+<td>حذف أو إعادة كتابة <code>BookRepositoryTest</code></td>
+<td>15 دقيقة</td>
+<td>إصلاح الاختبارات المعطلة</td>
+</tr>
+<tr>
+<td>8</td>
+<td>إزالة اعتماد JPA غير المستخدم</td>
+<td>2 دقيقة</td>
+<td>تقليل حجم البناء ووقت البدء</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>10. Major Refactorings | إعادة هيكلة رئيسية</h2>
+<h3>Major Refactoring 1: Fix N+1 Query | إصلاح مشكلة N+1</h3>
+<ul>
+<li><strong>الملفات / Files</strong>: <code>ListingRepository.kt</code>، <code>ListingService.kt</code></li>
+<li><strong>المشكلة / Problem</strong>: <code>getListings()</code> يستعلم عن كل كتاب بشكل فردي داخل حلقة</li>
+<li><strong>التغيير / Change</strong>: إنشاء استعلام JOIN يُرجع بيانات الإعلان والكتاب معاً، أو جلب كل الكتب دفعة واحدة بالـ IDs</li>
+<li><strong>الأثر / Impact</strong>: تحسين أداء البحث عن الإعلانات (الـ endpoint الأكثر استخداماً)</li>
+<li><strong>التعقيد / Complexity</strong>: متوسط / Medium</li>
+</ul>
+<h3>Major Refactoring 2: Externalize All Secrets | إخراج كل المفاتيح السرية</h3>
+<ul>
+<li><strong>الملفات / Files</strong>: <code>JwtUtils.kt</code>، <code>application.yaml</code>، <code>docker-compose.yml</code>، <code>FileUploadController.kt</code></li>
+<li><strong>المشكلة / Problem</strong>: المفاتيح والقيم الخاصة بالبيئة ثابتة في كل مكان</li>
+<li><strong>التغيير / Change</strong>: نقل JWT secret، بيانات DB، base URL للتكوين مع تجاوزات متغيرات البيئة</li>
+<li><strong>الأثر / Impact</strong>: أمان + جاهزية للإنتاج</li>
+<li><strong>التعقيد / Complexity</strong>: صغير-متوسط / Small-Medium</li>
+</ul>
+<h3>Major Refactoring 3: Standardize API Response Format | توحيد تنسيق استجابة API</h3>
+<ul>
+<li><strong>الملفات / Files</strong>: كل الـ controllers</li>
+<li><strong>المشكلة / Problem</strong>: تنسيقات استجابة غير متسقة</li>
+<li><strong>التغيير / Change</strong>: إنشاء غلاف <code>ApiResponse&lt;T&gt;</code> موحد</li>
+<li><strong>الأثر / Impact</strong>: عقد API أفضل؛ تطوير عميل أسهل</li>
+<li><strong>التعقيد / Complexity</strong>: متوسط (يمس كل الـ controllers)</li>
+</ul>
+<hr>
+<h2>11. Technical Debt | الدين التقني</h2>
+<h3>Critical Technical Debt | دين تقني حرج</h3>
+<table>
+<thead>
+<tr>
+<th>Debt / الدين</th>
+<th>Location / الموقع</th>
+<th>Impact / الأثر</th>
+<th>Address Now? / يُعالج الآن؟</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>مفتاح JWT ثابت / Hardcoded JWT secret</td>
+<td><code>JwtUtils.kt</code></td>
+<td>أي شخص لديه وصول للكود يقدر يزوّر توكنات</td>
+<td><strong>نعم / Yes</strong></td>
+</tr>
+<tr>
+<td>بيانات اعتماد بـ VCS / Credentials in VCS</td>
+<td><code>application.yaml</code></td>
+<td>تعرض بيانات قاعدة البيانات</td>
+<td><strong>نعم / Yes</strong></td>
+</tr>
+</tbody></table>
+<h3>Important Technical Debt | دين تقني مهم</h3>
+<table>
+<thead>
+<tr>
+<th>Debt / الدين</th>
+<th>Location / الموقع</th>
+<th>Impact / الأثر</th>
+<th>Address Now? / يُعالج الآن؟</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>قائمة سوداء بالذاكرة / In-memory token blacklist</td>
+<td><code>TokenBlacklistService.kt</code></td>
+<td>الخروج لا يبقى بعد إعادة التشغيل؛ تسرب ذاكرة</td>
+<td>قريباً / Soon</td>
+</tr>
+<tr>
+<td>مشكلة N+1 / N+1 query</td>
+<td><code>ListingService.kt</code></td>
+<td>الأداء يتدهور مع زيادة الإعلانات</td>
+<td>قريباً / Soon</td>
+</tr>
+<tr>
+<td>ملف اختبار معطل / Broken test file</td>
+<td><code>BookRepositoryTest.kt</code></td>
+<td>إحساس زائف بتغطية الاختبارات</td>
+<td>قريباً / Soon</td>
+</tr>
+<tr>
+<td>دوال repository مكررة / Duplicate repo methods</td>
+<td><code>ListingRepository.kt</code></td>
+<td>ارتباك بالصيانة؛ سلوك غير متسق</td>
+<td>قريباً / Soon</td>
+</tr>
+</tbody></table>
+<h3>Acceptable Technical Debt | دين تقني مقبول</h3>
+<table>
+<thead>
+<tr>
+<th>Debt / الدين</th>
+<th>Location / الموقع</th>
+<th>Address Later / يُعالج لاحقاً</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>لا معلومات صفحات / No pagination metadata</td>
+<td><code>ListingController</code></td>
+<td>عند بناء واجهة الصفحات</td>
+</tr>
+<tr>
+<td>أنماط استمرارية مختلطة / Mixed persistence</td>
+<td>Repository layer</td>
+<td>فقط إذا أصبح مربكاً</td>
+</tr>
+<tr>
+<td>CORS لـ localhost فقط / CORS localhost-only</td>
+<td><code>SecurityConfig</code></td>
+<td>عند النشر للإنتاج</td>
+</tr>
+</tbody></table>
+<h3>Cosmetic Technical Debt | دين تقني تجميلي</h3>
+<table>
+<thead>
+<tr>
+<th>Debt / الدين</th>
+<th>Location / الموقع</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>رسائل خطأ عربية/إنجليزية مخلوطة / Mixed language error messages</td>
+<td>Repositories، BookService</td>
+</tr>
+<tr>
+<td>تعليقات تصحيح أخطاء / Debug comments</td>
+<td>AuthController</td>
+</tr>
+<tr>
+<td>أسماء كلاسات كاملة بدل imports / Fully qualified class names</td>
+<td>ListingRepository، AuthService</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>12. Dead / Unused Code | كود ميت / غير مستخدم</h2>
+<h3>CONFIRMED UNUSED | مؤكد غير مستخدم</h3>
+<table>
+<thead>
+<tr>
+<th>Item / العنصر</th>
+<th>Location / الموقع</th>
+<th>Evidence / الدليل</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>دالة <code>findListings()</code></td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/repository/ListingRepository.kt#L95-L142">ListingRepository.kt:95-142</a></td>
+<td><code>ListingService.getListings()</code> يستدعي <code>findListingsWithFilters()</code> بدلاً منها؛ البحث يؤكد عدم وجود مستدعي آخر</td>
+</tr>
+<tr>
+<td><code>BookService</code> (الكلاس بالكامل)</td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/service/BookService.kt">BookService.kt</a></td>
+<td>لا controller أو service يستدعي أي من دواله</td>
+</tr>
+<tr>
+<td><code>BadRequestException</code></td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/exception/BadRequestException.kt">BadRequestException.kt</a></td>
+<td>لا يُرمى في أي مكان بالكود</td>
+</tr>
+</tbody></table>
+<h3>SUSPECTED UNUSED | يُشتبه أنه غير مستخدم (ربما مُجهّز للمستقبل)</h3>
+<table>
+<thead>
+<tr>
+<th>Item / العنصر</th>
+<th>Location / الموقع</th>
+<th>Evidence / الدليل</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>CreateBookRequest</code> DTO</td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/dto/CreateBookRequest.kt">CreateBookRequest.kt</a></td>
+<td>لا controller أو service يشير إليه</td>
+</tr>
+<tr>
+<td><code>UpdateBookRequest</code> DTO</td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/dto/UpdateBookRequest.kt">UpdateBookRequest.kt</a></td>
+<td>لا controller أو service يشير إليه</td>
+</tr>
+<tr>
+<td><code>BookResponseDto</code> DTO</td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/dto/BookResponseDto.kt">BookResponseDto.kt</a></td>
+<td>لم يتم إنشاؤه في أي مكان</td>
+</tr>
+<tr>
+<td><code>BookDetailDto</code> + <code>SellerDto</code> DTOs</td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/dto/BookDetailDto.kt">BookDetailDto.kt</a></td>
+<td>لم يتم إنشاؤه في أي مكان</td>
+</tr>
+<tr>
+<td><code>AcademicRepository.findUniversityById()</code>، <code>findFacultyById()</code>، <code>findMajorById()</code></td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/main/kotlin/com/waraqa/backend/repository/AcademicRepository.kt#L63-L77">AcademicRepository.kt:63-77</a></td>
+<td>لا مستدعي — على الأرجح مُجهّز للمستقبل</td>
+</tr>
+</tbody></table>
+<h3>STALE CODE | كود قديم</h3>
+<table>
+<thead>
+<tr>
+<th>Item / العنصر</th>
+<th>Location / الموقع</th>
+<th>Evidence / الدليل</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>BookRepositoryTest</code></td>
+<td><a href="file:///c:/Users/USER/CodeReview/Waraqa/src/test/kotlin/com/waraqa/backend/repository/BookRepositoryTest.kt">BookRepositoryTest.kt</a></td>
+<td>يشير لـ <code>Book.price</code>، <code>Book.publishedAt</code>، <code>Book.coverImage</code>، <code>Book.publisherId</code>، <code>bookRepository.findByPublisherId()</code> — لا يوجد أي منها بالنموذج الحالي. هذا الاختبار كُتب لنسخة سابقة قبل فصل الكتب عن الإعلانات.</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>13. Missing Tests | اختبارات مفقودة</h2>
+<table>
+<thead>
+<tr>
+<th>File / الملف</th>
+<th>Class/Method / الكلاس/الدالة</th>
+<th>Scenario / السيناريو</th>
+<th>Why / لماذا</th>
+<th>Type / النوع</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>ListingService.kt</code></td>
+<td><code>createListing()</code></td>
+<td>التحقق يرفض عنوان مفقود / Validation rejects missing title</td>
+<td>العملية التجارية الأساسية</td>
+<td>وحدة / Unit</td>
+</tr>
+<tr>
+<td><code>ListingService.kt</code></td>
+<td><code>createListing()</code></td>
+<td>إعلان أكاديمي يحتاج جامعة/كلية/تخصص / Academic requires uni/fac/maj</td>
+<td>تحقق خاص بالتصنيف</td>
+<td>وحدة / Unit</td>
+</tr>
+<tr>
+<td><code>ListingService.kt</code></td>
+<td><code>createListing()</code></td>
+<td>يُعيد استخدام كتاب موجود عند تطابق العنوان+المؤلف / Reuses existing book</td>
+<td>منطق إزالة التكرار</td>
+<td>تكاملي / Integration</td>
+</tr>
+<tr>
+<td><code>ListingService.kt</code></td>
+<td><code>getListings()</code></td>
+<td>يُرجع إعلانات مُصفّاة حسب التصنيف والجامعة / Filtered results</td>
+<td>وظيفة البحث الأساسية</td>
+<td>تكاملي / Integration</td>
+</tr>
+<tr>
+<td><code>ListingRepository.kt</code></td>
+<td><code>findListingsWithFilters()</code></td>
+<td>يُطبق فلاتر البحث والتصنيف والجامعة بشكل صحيح</td>
+<td>صحة استعلامات SQL</td>
+<td>تكاملي / Integration</td>
+</tr>
+<tr>
+<td><code>ListingRepository.kt</code></td>
+<td><code>save()</code></td>
+<td>يحفظ ويسترجع إعلان بكل الحقول</td>
+<td>صحة الاستمرارية</td>
+<td>تكاملي / Integration</td>
+</tr>
+<tr>
+<td><code>AuthService.kt</code></td>
+<td><code>register()</code></td>
+<td>يرفض إيميل مكرر / Rejects duplicate email</td>
+<td>قاعدة عمل</td>
+<td>وحدة / Unit</td>
+</tr>
+<tr>
+<td><code>AuthService.kt</code></td>
+<td><code>login()</code></td>
+<td>يُرجع token لبيانات صحيحة / Returns token for valid credentials</td>
+<td>تدفق المصادقة الأساسي</td>
+<td>وحدة / Unit</td>
+</tr>
+<tr>
+<td><code>FileUploadController.kt</code></td>
+<td><code>uploadFile()</code></td>
+<td>يرفض ملفات غير صور / Rejects non-image files</td>
+<td>تحقق أمني</td>
+<td>وحدة/تكاملي</td>
+</tr>
+<tr>
+<td><code>TokenBlacklistService.kt</code></td>
+<td><code>isBlacklisted()</code></td>
+<td>يُرجع true لتوكن محظور / Returns true for blacklisted token</td>
+<td>صحة المصادقة</td>
+<td>وحدة / Unit</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>14. Refactoring Roadmap | خارطة طريق إعادة الهيكلة</h2>
+<h3>Step 1: Fix Security Vulnerabilities (P0) | إصلاح الثغرات الأمنية</h3>
+<p><strong>الملفات / Files</strong>: <code>JwtUtils.kt</code>، <code>application.yaml</code>، <code>.gitignore</code></p>
+<ul>
+<li>إخراج JWT secret للتكوين / Externalize JWT secret to config</li>
+<li>إضافة <code>application.yaml</code> و <code>uploads/</code> لـ <code>.gitignore</code></li>
+<li><strong>لماذا أولاً / Why first</strong>: ثغرات أمنية يمكن استغلالها فوراً</li>
+<li><strong>الاعتمادات / Dependencies</strong>: لا شيء</li>
+<li><strong>المخاطر / Risk</strong>: التوكنات الحالية ستُبطل إذا تغير المفتاح</li>
+<li><strong>الاختبارات بعدها / Tests after</strong>: التحقق أن login/auth لا يزال يعمل</li>
+</ul>
+<h3>Step 2: Fix Broken Tests &amp; Dead Repository Code (P1) | إصلاح الاختبارات المعطلة والكود الميت</h3>
+<p><strong>الملفات / Files</strong>: <code>BookRepositoryTest.kt</code>، <code>ListingRepository.kt</code></p>
+<ul>
+<li>إعادة كتابة <code>BookRepositoryTest</code> للنموذج الحالي</li>
+<li>إزالة دالة <code>findListings()</code> المكررة</li>
+<li>إصلاح <code>findListingsWithFilters()</code> لاستخدام <code>rowMapper</code> على مستوى الكلاس</li>
+<li><strong>لماذا ثانياً / Why second</strong>: نحتاج اختبارات شغالة قبل أي تغييرات إضافية</li>
+<li><strong>الاعتمادات / Dependencies</strong>: لا شيء</li>
+<li><strong>المخاطر / Risk</strong>: لا شيء — <code>findListings()</code> غير مستخدمة</li>
+<li><strong>الاختبارات بعدها / Tests after</strong>: تشغيل كل الاختبارات؛ التحقق أن بحث الإعلانات يُرجع كل الحقول</li>
+</ul>
+<h3>Step 3: Fix N+1 Query (P1) | إصلاح مشكلة N+1</h3>
+<p><strong>الملفات / Files</strong>: <code>ListingRepository.kt</code>، <code>ListingService.kt</code></p>
+<ul>
+<li>إنشاء استعلام JOIN يُرجع بيانات الإعلان والكتاب معاً</li>
+<li>تحديث <code>getListings()</code> لاستخدام الاستعلام الجديد</li>
+<li><strong>لماذا ثالثاً / Why third</strong>: الأداء حرج لـ endpoint البحث</li>
+<li><strong>الاعتمادات / Dependencies</strong>: الخطوة 2 (repository مُصلح)</li>
+<li><strong>المخاطر / Risk</strong>: متوسط — يحتاج اختبار شامل للاستعلام</li>
+<li><strong>الاختبارات بعدها / Tests after</strong>: اختبار تكاملي لبحث الإعلانات مع إعلانات متعددة</li>
+</ul>
+<h3>Step 4: Secure File Upload (P1) | تأمين رفع الملفات</h3>
+<p><strong>الملفات / Files</strong>: <code>SecurityConfig.kt</code>، <code>FileUploadController.kt</code>، <code>application.yaml</code></p>
+<ul>
+<li>طلب مصادقة لـ <code>/api/upload</code></li>
+<li>إضافة حدود حجم الملف</li>
+<li>استبدال URL الثابت <code>localhost:8080</code></li>
+<li><strong>لماذا رابعاً / Why fourth</strong>: يمنع إساءة استخدام endpoint الرفع</li>
+<li><strong>الاعتمادات / Dependencies</strong>: لا شيء</li>
+<li><strong>المخاطر / Risk</strong>: منخفض</li>
+<li><strong>الاختبارات بعدها / Tests after</strong>: التحقق أن الرفع المصادق يعمل؛ غير المصادق يُرفض</li>
+</ul>
+<h3>Step 5: Clean Up Dead Code (P2) | تنظيف الكود الميت</h3>
+<p><strong>الملفات / Files</strong>: عدة DTOs، <code>BookService.kt</code>، <code>BadRequestException.kt</code></p>
+<ul>
+<li>إزالة الكود المؤكد غير مستخدم</li>
+<li>اتخاذ قرار بشأن DTOs المشتبه بها (الإبقاء لميزات مخططة أو الإزالة)</li>
+<li><strong>لماذا خامساً / Why fifth</strong>: يقلل الارتباك؛ كود أنظف</li>
+<li><strong>الاعتمادات / Dependencies</strong>: لا شيء</li>
+<li><strong>المخاطر / Risk</strong>: منخفض</li>
+<li><strong>الاختبارات بعدها / Tests after</strong>: التحقق أن البناء لا يزال يعمل compile</li>
+</ul>
+<h3>Step 6: Standardize API (P2) | توحيد الـ API</h3>
+<p><strong>الملفات / Files</strong>: <code>ListingController.kt</code>، <code>AuthController.kt</code>، <code>GlobalExceptionHandler.kt</code></p>
+<ul>
+<li>توحيد بادئة المسار لـ <code>/api/...</code></li>
+<li>نقل معالج الاستثناءات المحلي للعام</li>
+<li>توحيد تنسيق الاستجابة</li>
+<li><strong>لماذا سادساً / Why sixth</strong>: يحسّن تناسق API لتطوير العميل</li>
+<li><strong>الاعتمادات / Dependencies</strong>: الخطوات 1-4 (الوظائف الأساسية يجب أن تكون مستقرة)</li>
+<li><strong>المخاطر / Risk</strong>: متوسط — العملاء يحتاجون تحديث الـ endpoints</li>
+<li><strong>الاختبارات بعدها / Tests after</strong>: SecurityTest، اختبار API يدوي</li>
+</ul>
+<h3>Step 7: Add Missing Tests (P2) | إضافة الاختبارات المفقودة</h3>
+<p><strong>الملفات / Files</strong>: ملفات اختبار جديدة</p>
+<ul>
+<li>إضافة اختبارات لـ ListingService</li>
+<li>إضافة اختبارات تكاملية لـ ListingRepository</li>
+<li>إضافة اختبارات لـ FileUploadController</li>
+<li><strong>لماذا أخيراً / Why last</strong>: الآن الكود نظيف؛ الاختبارات تتحقق من الكود المُعاد هيكلته</li>
+<li><strong>الاعتمادات / Dependencies</strong>: الخطوات 1-6</li>
+<li><strong>المخاطر / Risk</strong>: لا شيء</li>
+<li><strong>الاختبارات بعدها / Tests after</strong>: تشغيل كل مجموعة الاختبارات</li>
+</ul>
+<hr>
+<h2>15. Final Verdict | الحكم النهائي</h2>
+<h3>1. Is the current architecture acceptable? | هل الهيكلية الحالية مقبولة؟</h3>
+<p><strong>EN:</strong> <strong>Yes, for an early-stage project.</strong> The 3-layer architecture (Controller → Service → Repository) is sound and consistently applied. The code is readable, uses idiomatic Kotlin, and the domain model (separating books from listings — supporting both the general public and university students) is well-structured. This does NOT need an architectural rewrite.</p>
+<p><strong>AR:</strong> <strong>نعم، لمشروع بمراحله الأولى.</strong> هيكلية الـ 3 طبقات (Controller → Service → Repository) سليمة ومُتّبعة بشكل ثابت. الكود مقروء، يستخدم Kotlin اصطلاحي، ونموذج النطاق (فصل الكتب عن الإعلانات — مع دعم العامة وطلاب الجامعات) مُصمم جيداً. لا يحتاج إعادة كتابة معمارية.</p>
+<h3>2. What are the 5 biggest problems? | ما هي أكبر 5 مشاكل؟</h3>
+<ol>
+<li><strong>مفتاح JWT ثابت + بيانات اعتماد DB بـ VCS</strong> — ثغرة أمنية</li>
+<li><strong>مشكلة N+1 ببحث الإعلانات</strong> — مشكلة أداء</li>
+<li><strong>دوال repository مكررة/معطلة</strong> — <code>findListings()</code> مقابل <code>findListingsWithFilters()</code> مع RowMapper ناقص</li>
+<li><strong>قائمة سوداء بالذاكرة</strong> — الخروج لا يبقى بعد إعادة التشغيل؛ نمو بلا حدود</li>
+<li><strong>ملف اختبار معطل</strong> — <code>BookRepositoryTest</code> يشير لنموذج ميت؛ يعطي ثقة زائفة</li>
+</ol>
+<h3>3. What must be fixed immediately? | ما يجب إصلاحه فوراً؟</h3>
+<ul>
+<li>إخراج JWT secret من الكود المصدري / Externalize JWT secret</li>
+<li>إضافة <code>application.yaml</code> لـ <code>.gitignore</code></li>
+<li>إصلاح RowMapper الناقص بـ <code>findListingsWithFilters()</code> (يُسقط بيانات الصور/المشاهدات بصمت)</li>
+</ul>
+<h3>4. What should be refactored soon? | ما يجب إعادة هيكلته قريباً؟</h3>
+<ul>
+<li>إصلاح مشكلة N+1 بـ <code>ListingService.getListings()</code></li>
+<li>إزالة دالة <code>findListings()</code> المكررة</li>
+<li>إعادة كتابة أو حذف <code>BookRepositoryTest</code></li>
+<li>تأمين endpoint رفع الملفات (طلب مصادقة)</li>
+<li>حفظ القائمة السوداء أو إضافة تنظيف TTL</li>
+</ul>
+<h3>5. What can wait? | ما يمكن أن ينتظر؟</h3>
+<ul>
+<li>توحيد تنسيق استجابة API</li>
+<li>إضافة معلومات الصفحات (pagination metadata)</li>
+<li>إزالة DTOs المشتبه بعدم استخدامها</li>
+<li>نقل <code>RegistrationException</code> لحزمة exception</li>
+<li>إضافة تغطية اختبارات شاملة</li>
+<li>تكوين CORS للإنتاج</li>
+</ul>
+<h3>6. What should NOT be touched? | ما لا يجب لمسه؟</h3>
+<ul>
+<li>تحقق <code>RegisterRequest</code> — مُنفّذ جيداً</li>
+<li><code>JwtAuthenticationFilter</code> — نظيف، صحيح</li>
+<li><code>AcademicRepository</code> — مُهيكل جيداً</li>
+<li><code>SecurityTest</code> — اختبار تكاملي جيد</li>
+<li>بيانات <code>schema.sql</code> الأولية — استخدام صحيح لـ <code>ON CONFLICT</code></li>
+<li><code>WebConfig</code> — بسيط وصحيح</li>
+<li>نماذج <code>User</code>، <code>Book</code>، <code>Listing</code> — Kotlin data classes نظيفة</li>
+<li>الهيكلية العامة ذات الـ 3 طبقات — تعمل</li>
+</ul>
+<h3>7. Estimated overall refactoring complexity? | تعقيد إعادة الهيكلة الإجمالي المُقدّر؟</h3>
+<p><strong>EN:</strong> <strong>Small-Medium.</strong> The codebase is ~2,200 lines of Kotlin across 38 files. The critical security fixes (Steps 1-2) are trivial. The N+1 fix and API standardization are medium complexity. No architectural changes are needed. A focused developer could complete Steps 1-5 in <strong>1-2 days</strong> and the full roadmap in <strong>3-4 days</strong>.</p>
+<p><strong>AR:</strong> <strong>صغير-متوسط.</strong> حجم الكود ~2,200 سطر Kotlin عبر 38 ملف. إصلاحات الأمان الحرجة (الخطوات 1-2) بسيطة. إصلاح N+1 وتوحيد API تعقيدهم متوسط. لا تغييرات معمارية مطلوبة. مطور مُركّز يقدر يُنهي الخطوات 1-5 بـ <strong>1-2 يوم</strong> وخارطة الطريق كاملة بـ <strong>3-4 أيام</strong>.</p>
+
+    </div>
+  </div>
+</body>
+</html>

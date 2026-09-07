@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS users (
     rating DOUBLE PRECISION DEFAULT 0.0,
     total_sales INT DEFAULT 0,
     last_seen TIMESTAMP,
+    bio TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -60,7 +61,8 @@ CREATE TABLE IF NOT EXISTS listings (
     university_id BIGINT REFERENCES universities(id) ON DELETE SET NULL,
     faculty_id BIGINT REFERENCES faculties(id) ON DELETE SET NULL,
     major_id BIGINT REFERENCES majors(id) ON DELETE SET NULL,
-    published_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    published_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status VARCHAR(20) DEFAULT 'active'
 );
 
 -- =========================================================================
@@ -447,3 +449,12 @@ CREATE INDEX IF NOT EXISTS idx_listings_publisher ON listings(publisher_id);
 CREATE INDEX IF NOT EXISTS idx_listings_university ON listings(university_id);
 CREATE INDEX IF NOT EXISTS idx_listings_faculty ON listings(faculty_id);
 CREATE INDEX IF NOT EXISTS idx_listings_major ON listings(major_id);
+
+ALTER TABLE listings ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'active';
+ALTER TABLE users ADD COLUMN IF NOT EXISTS bio TEXT;
+CREATE INDEX IF NOT EXISTS idx_listings_status ON listings(status);
+
+CREATE TABLE IF NOT EXISTS blacklisted_tokens (
+    token VARCHAR(500) PRIMARY KEY,
+    expires_at TIMESTAMP NOT NULL
+);

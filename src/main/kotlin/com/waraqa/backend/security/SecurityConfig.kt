@@ -48,19 +48,26 @@ class SecurityConfig(
                 auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                 // Public auth, docs, and error routes
-                auth.requestMatchers("/api/auth/**", "/error").permitAll()
+                auth.requestMatchers("/api/v1/auth/**", "/error").permitAll()
                     .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
 
                 // Authenticated routes
-                auth.requestMatchers(HttpMethod.GET, "/api/books/my-books").authenticated()
-                auth.requestMatchers(HttpMethod.POST, "/api/books", "/listings", "/api/listings").authenticated()
-                auth.requestMatchers(HttpMethod.PUT, "/api/books/*").authenticated()
-                auth.requestMatchers("/api/users/profile").authenticated()
+                auth.requestMatchers(HttpMethod.GET, "/api/v1/books/my-books").authenticated()
+                auth.requestMatchers(HttpMethod.POST, "/api/v1/books", "/api/v1/listings").authenticated()
+                auth.requestMatchers(HttpMethod.POST, "/api/v1/upload", "/api/v1/upload/**").authenticated()
+                auth.requestMatchers(HttpMethod.PUT, "/api/v1/books/*").authenticated()
+                auth.requestMatchers("/api/v1/users/profile").authenticated()
+                auth.requestMatchers(HttpMethod.PUT, "/api/v1/users/*/profile").authenticated()
+                auth.requestMatchers(HttpMethod.PUT, "/api/v1/listings/*").authenticated()
+                auth.requestMatchers(HttpMethod.PATCH, "/api/v1/listings/*/status").authenticated()
+                auth.requestMatchers(HttpMethod.DELETE, "/api/v1/listings/*").authenticated()
+                auth.requestMatchers(HttpMethod.GET, "/api/v1/users/*/listings/counts").authenticated()
 
                 // Public search & lookup endpoints
-                auth.requestMatchers(HttpMethod.GET, "/api/books", "/api/books/*", "/listings", "/listings/*").permitAll()
-                auth.requestMatchers(HttpMethod.GET, "/api/universities", "/api/faculties", "/api/majors").permitAll()
-                auth.requestMatchers("/api/upload", "/api/upload/**", "/uploads/**").permitAll()
+                auth.requestMatchers(HttpMethod.GET, "/api/v1/books", "/api/v1/books/*", "/api/v1/listings", "/api/v1/listings/*").permitAll()
+                auth.requestMatchers(HttpMethod.GET, "/api/v1/universities", "/api/v1/faculties", "/api/v1/majors").permitAll()
+                auth.requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
+                auth.requestMatchers(HttpMethod.GET, "/api/v1/users/*/profile", "/api/v1/users/*/listings").permitAll()
 
                 auth.anyRequest().authenticated()
             }

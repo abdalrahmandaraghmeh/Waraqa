@@ -1,19 +1,26 @@
 package com.waraqa.backend.security
 
 import io.jsonwebtoken.Jwts
-import io.jsonwebtoken.SignatureAlgorithm
 import io.jsonwebtoken.security.Keys
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.nio.charset.StandardCharsets
 import java.util.Date
 import javax.crypto.SecretKey
 
 @Component
-class JwtUtils {
-    // 256-bit fixed secret string for persistent signing across restarts
-    private val jwtSecret: String = "waraqa_dev_secret_key_must_be_at_least_32_bytes_long_123456"
-    private val key: SecretKey = Keys.hmacShaKeyFor(jwtSecret.toByteArray(StandardCharsets.UTF_8))
-    private val jwtExpirationMs: Long = 7 * 24 * 60 * 60 * 1000L // 7 days (604,800,000 ms)
+class JwtUtils(
+    @Value("\${jwt.secret}")
+    private val jwtSecret: String,
+    @Value("\${jwt.expiration-ms:604800000}")
+    private val jwtExpirationMs: Long
+) {
+    private val key: SecretKey = run {
+        require(jwtSecret.toByteArray(StandardCharsets.UTF_8).size >= 32) {
+            "JWT secret key must be at least 256 bits (32 bytes) long"
+        }
+        Keys.hmacShaKeyFor(jwtSecret.toByteArray(StandardCharsets.UTF_8))
+    }
 
     fun generateToken(email: String): String {
         return Jwts.builder()
@@ -31,6 +38,15 @@ class JwtUtils {
             .parseClaimsJws(token)
             .body
             .subject
+    }
+
+    fun getExpirationDateFromToken(token: String): Date {
+        return Jwts.parserBuilder()
+            .setSigningKey(key)
+            .build()
+            .parseClaimsJws(token)
+            .body
+            .expiration
     }
 
     fun validateToken(token: String): Boolean {

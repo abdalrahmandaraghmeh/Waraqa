@@ -18,6 +18,9 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.transaction.annotation.Transactional
 
+import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity
+import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
+
 @SpringBootTest
 @Transactional
 class SecurityTest @Autowired constructor(
@@ -31,7 +34,9 @@ class SecurityTest @Autowired constructor(
 
     @BeforeEach
     fun setUp() {
-        mockMvc = MockMvcBuilders.webAppContextSetup(wac).build()
+        mockMvc = MockMvcBuilders.webAppContextSetup(wac)
+            .apply<DefaultMockMvcBuilder>(springSecurity())
+            .build()
 
         val registerRequest = RegisterRequest(
             name = "Security Test User",
@@ -42,7 +47,7 @@ class SecurityTest @Autowired constructor(
         
         // Register user via API
         mockMvc.perform(
-            post("/api/auth/register")
+            post("/api/v1/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(registerRequest))
         )
@@ -53,7 +58,7 @@ class SecurityTest @Autowired constructor(
             password = "SecurePassword123"
         )
         val loginResult = mockMvc.perform(
-            post("/api/auth/login")
+            post("/api/v1/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(loginRequest))
         ).andExpect(status().isOk).andReturn()
@@ -66,45 +71,51 @@ class SecurityTest @Autowired constructor(
 
     @Test
     fun `should access public endpoints without authentication`() {
-        // GET /api/books should return 200
-        mockMvc.perform(get("/api/books"))
+        // GET /listings should return 200
+        mockMvc.perform(get("/api/v1/listings"))
             .andExpect(status().isOk)
 
         // GET /api/universities should return 200
-        mockMvc.perform(get("/api/universities"))
+        mockMvc.perform(get("/api/v1/universities"))
             .andExpect(status().isOk)
 
         // GET /api/faculties should return 200
-        mockMvc.perform(get("/api/faculties"))
+        mockMvc.perform(get("/api/v1/faculties"))
             .andExpect(status().isOk)
 
         // GET /api/majors should return 200
-        mockMvc.perform(get("/api/majors"))
+        mockMvc.perform(get("/api/v1/majors"))
             .andExpect(status().isOk)
     }
 
     @Test
     fun `should protect profile endpoint and deny access after logout`() {
         // 1. Access profile without token -> should be Forbidden (403)
-        mockMvc.perform(get("/api/users/profile"))
+        mockMvc.perform(get("/api/v1/users/profile"))
             .andExpect(status().isForbidden)
 
         // 2. Access profile with valid token -> should be OK (200)
         mockMvc.perform(
-            get("/api/users/profile")
+            get("/api/v1/users/profile")
                 .header("Authorization", "Bearer $token")
         ).andExpect(status().isOk)
 
         // 3. Perform logout
         mockMvc.perform(
-            post("/api/auth/logout")
+            post("/api/v1/auth/logout")
                 .header("Authorization", "Bearer $token")
         ).andExpect(status().isOk)
 
         // 4. Access profile again with now blacklisted token -> should be Forbidden (403)
         mockMvc.perform(
-            get("/api/users/profile")
+            get("/api/v1/users/profile")
                 .header("Authorization", "Bearer $token")
         ).andExpect(status().isForbidden)
+    }
+
+    @Test
+    fun `should protect upload endpoint from unauthenticated users`() {
+        mockMvc.perform(post("/api/v1/upload"))
+            .andExpect(status().isForbidden)
     }
 }

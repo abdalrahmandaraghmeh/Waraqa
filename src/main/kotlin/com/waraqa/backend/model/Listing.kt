@@ -50,5 +50,7 @@ data class Listing(
     val majorId: Long? = null,
 
     @Column("published_at")
-    val publishedAt: LocalDateTime = LocalDateTime.now()
+    val publishedAt: LocalDateTime = LocalDateTime.now(),
+
+    val status: String = "active"
 )
