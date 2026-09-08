@@ -26,6 +26,8 @@
 @rem Set local scope for the variables, and ensure extensions are enabled
 setlocal EnableExtensions
 
+set JAVA_HOME=C:\Users\USER\.jdks\ms-21.0.11
+
 set DIRNAME=%~dp0
 if "%DIRNAME%"=="" set DIRNAME=.
 @rem This is normally unused
