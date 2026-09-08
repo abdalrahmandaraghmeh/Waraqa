@@ -162,6 +162,14 @@ class ListingService(
     }
 
     /**
+     * Fetches a single listing by its ID.
+     */
+    fun getListingById(id: Long): ListingResponseDto {
+        return listingRepository.findListingDtoById(id)
+            .orElseThrow { NotFoundException("Listing not found") }
+    }
+
+    /**
      * Returns active listings for a specific publisher — used on public profile page.
      */
     fun getListingsByPublisher(publisherId: Long, page: Int, limit: Int): List<ListingResponseDto> {

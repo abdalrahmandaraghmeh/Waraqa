@@ -303,6 +303,17 @@ class ListingRepository(private val jdbcTemplate: NamedParameterJdbcTemplate) {
     // =========================================================================
 
     /**
+     * Finds a single listing as a DTO (with joined book/university details).
+     * Used for the single-listing detail page.
+     */
+    fun findListingDtoById(listingId: Long): Optional<ListingResponseDto> {
+        val sql = "SELECT $dtoSelectColumns $dtoJoins WHERE l.id = :id"
+        val params = MapSqlParameterSource("id", listingId)
+        val results = jdbcTemplate.query(sql, params) { rs, _ -> mapRowToDto(rs) }
+        return Optional.ofNullable(results.firstOrNull())
+    }
+
+    /**
      * Finds a listing by ID (raw model, for ownership checks).
      */
     fun findById(listingId: Long): Optional<Listing> {

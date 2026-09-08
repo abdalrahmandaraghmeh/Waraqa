@@ -47,6 +47,12 @@ class ListingController(
         return ResponseEntity.ok(listings)
     }
 
+    @GetMapping("/{id}")
+    fun getListing(@PathVariable id: Long): ResponseEntity<ListingResponseDto> {
+        val listing = listingService.getListingById(id)
+        return ResponseEntity.ok(listing)
+    }
+
     /**
      * PUT /api/v1/listings/{id}
      * Edits a listing. Only the listing owner can edit.
