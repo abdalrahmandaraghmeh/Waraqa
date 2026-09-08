@@ -31,7 +31,7 @@ class ListingController(
         @RequestParam(name = "sub_type", required = false) subType: String?,
         @RequestParam(name = "sort", defaultValue = "top_rated") sort: String?,
         @RequestParam(name = "page", defaultValue = "0") page: Int,
-        @RequestParam(name = "limit", defaultValue = "8") limit: Int
+        @RequestParam(name = "limit", defaultValue = "20") limit: Int
     ): ResponseEntity<List<ListingResponseDto>> {
         val listings = listingService.getListings(
             search = search,

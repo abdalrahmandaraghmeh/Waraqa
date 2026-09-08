@@ -75,7 +75,7 @@ class UserController(
         @PathVariable id: Long,
         @RequestParam(name = "status", required = false) status: String?,
         @RequestParam(name = "page", defaultValue = "0") page: Int,
-        @RequestParam(name = "limit", defaultValue = "8") limit: Int
+        @RequestParam(name = "limit", defaultValue = "20") limit: Int
     ): ResponseEntity<List<ListingResponseDto>> {
         val listings = if (status != null) {
             // Owner-only: filtered by status (auth enforced in service)

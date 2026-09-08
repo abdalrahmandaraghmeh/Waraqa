@@ -53,7 +53,7 @@ class FileUploadController(
         val targetPath = uploadDir.resolve(uniqueFilename)
         Files.copy(file.inputStream, targetPath, StandardCopyOption.REPLACE_EXISTING)
 
-        val fileUrl = "/uploads/$uniqueFilename"
+        val fileUrl = "http://localhost:8080/uploads/$uniqueFilename"
         return ResponseEntity.ok(mapOf("url" to fileUrl))
     }
 }
