@@ -9,16 +9,49 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
+import com.waraqa.backend.dto.ListingCountsResponse
+import com.waraqa.backend.security.SecurityUtils
+import com.waraqa.backend.exception.ForbiddenException
+
 @RestController
 @RequestMapping("/api/v1/listings")
 class ListingController(
-    private val listingService: ListingService
+    private val listingService: ListingService,
+    private val securityUtils: SecurityUtils
 ) {
 
     @PostMapping
     fun createListing(@RequestBody request: CreateListingRequest): ResponseEntity<ListingResponseDto> {
         val response = listingService.createListing(request)
         return ResponseEntity.status(HttpStatus.CREATED).body(response)
+    }
+
+    /**
+     * GET /api/v1/listings/my
+     * Returns the authenticated user's listings filtered by status.
+     */
+    @GetMapping("/my")
+    fun getMyListings(
+        @RequestParam(name = "status", defaultValue = "active") status: String,
+        @RequestParam(name = "page", defaultValue = "0") page: Int,
+        @RequestParam(name = "limit", defaultValue = "20") limit: Int
+    ): ResponseEntity<List<ListingResponseDto>> {
+        val currentUserId = securityUtils.getCurrentUserId()
+            ?: throw ForbiddenException("Authentication required")
+        val listings = listingService.getOwnerListings(currentUserId, status, page, limit)
+        return ResponseEntity.ok(listings)
+    }
+
+    /**
+     * GET /api/v1/listings/my/counts
+     * Returns the active and sold listing counts for the authenticated user.
+     */
+    @GetMapping("/my/counts")
+    fun getMyListingCounts(): ResponseEntity<ListingCountsResponse> {
+        val currentUserId = securityUtils.getCurrentUserId()
+            ?: throw ForbiddenException("Authentication required")
+        val counts = listingService.getListingCounts(currentUserId)
+        return ResponseEntity.ok(counts)
     }
     
     @GetMapping
