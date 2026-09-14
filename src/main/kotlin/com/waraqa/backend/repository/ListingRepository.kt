@@ -29,7 +29,7 @@ class ListingRepository(private val jdbcTemplate: NamedParameterJdbcTemplate) {
             publisherId = rs.getLong("publisher_id"),
             description = rs.getString("description") ?: "",
             price = rs.getBigDecimal("price"),
-            listingType = rs.getString("listing_type") ?: "for_sale",
+            listingType = rs.getString("listing_type") ?: "FOR_SELL",
             exchangeFor = rs.getString("exchange_for"),
             condition = rs.getString("condition") ?: "good",
             coverImage = rs.getString("cover_image"),
@@ -118,6 +118,7 @@ class ListingRepository(private val jdbcTemplate: NamedParameterJdbcTemplate) {
         b.title AS book_title,
         b.author AS book_author,
         b.category AS book_category,
+        b.sub_type AS book_sub_type,
         u.name AS university_name,
         f.name AS faculty_name
     """.trimIndent()
@@ -134,7 +135,7 @@ class ListingRepository(private val jdbcTemplate: NamedParameterJdbcTemplate) {
      * Shared by all DTO-returning queries.
      */
     private fun mapRowToDto(rs: java.sql.ResultSet, subType: String? = null): ListingResponseDto {
-        val listingType = rs.getString("listing_type") ?: "for_sale"
+        val listingType = rs.getString("listing_type") ?: "FOR_SALE"
         val publishedAt = rs.getTimestamp("published_at")?.toLocalDateTime() ?: LocalDateTime.now()
         return ListingResponseDto(
             id = rs.getLong("id"),
@@ -144,10 +145,9 @@ class ListingRepository(private val jdbcTemplate: NamedParameterJdbcTemplate) {
             price = rs.getBigDecimal("price"),
             listingType = listingType,
             exchangeFor = rs.getString("exchange_for"),
-            isExchange = listingType == "for_sale_and_exchange",
             condition = rs.getString("condition") ?: "good",
             category = rs.getString("book_category") ?: "general",
-            subType = subType,
+            subType = subType ?: rs.getString("book_sub_type"),
             image = rs.getString("cover_image") ?: "",
             publisherId = rs.getLong("publisher_id"),
             universityId = rs.getLong("university_id").takeUnless { rs.wasNull() },
@@ -178,6 +178,7 @@ class ListingRepository(private val jdbcTemplate: NamedParameterJdbcTemplate) {
         facultyId: Long?,
         majorId: Long?,
         subType: String?,
+        listingType: String?,
         sort: String?,
         offset: Int,
         limit: Int
@@ -206,6 +207,14 @@ class ListingRepository(private val jdbcTemplate: NamedParameterJdbcTemplate) {
             sql += " AND l.major_id = :majorId"
             params.addValue("majorId", majorId)
         }
+        if (!subType.isNullOrBlank()) {
+            sql += " AND b.sub_type = :subType"
+            params.addValue("subType", subType)
+        }
+        if (listingType != null) {
+            sql += " AND l.listing_type = :listingType"
+            params.addValue("listingType", listingType)
+        }
 
         sql += when (sort) {
             "price_low", "price_asc" -> " ORDER BY l.price ASC"
@@ -218,7 +227,7 @@ class ListingRepository(private val jdbcTemplate: NamedParameterJdbcTemplate) {
         params.addValue("limit", limit)
         params.addValue("offset", offset)
 
-        return jdbcTemplate.query(sql, params) { rs, _ -> mapRowToDto(rs, subType) }
+        return jdbcTemplate.query(sql, params) { rs, _ -> mapRowToDto(rs) }
     }
 
     /**

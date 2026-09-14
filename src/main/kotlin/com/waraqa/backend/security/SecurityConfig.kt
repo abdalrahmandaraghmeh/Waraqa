@@ -67,7 +67,7 @@ class SecurityConfig(
                 auth.requestMatchers(HttpMethod.GET, "/api/v1/books", "/api/v1/books/*", "/api/v1/listings", "/api/v1/listings/*").permitAll()
                 auth.requestMatchers(HttpMethod.GET, "/api/v1/universities", "/api/v1/faculties", "/api/v1/majors").permitAll()
                 auth.requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
-                auth.requestMatchers(HttpMethod.GET, "/api/v1/users/*/profile", "/api/v1/users/*/listings").permitAll()
+                auth.requestMatchers(HttpMethod.GET, "/api/v1/users/*", "/api/v1/users/*/profile", "/api/v1/users/*/listings").permitAll()
 
                 auth.anyRequest().authenticated()
             }

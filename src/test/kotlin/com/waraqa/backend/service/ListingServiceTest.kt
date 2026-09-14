@@ -33,7 +33,7 @@ class ListingServiceTest {
             condition = "new",
             price = null,
             status = "active",
-            listingType = "for_sale"
+            listingType = "FOR_SALE"
         )
     }
 

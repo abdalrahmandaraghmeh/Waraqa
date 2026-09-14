@@ -41,7 +41,8 @@ CREATE TABLE IF NOT EXISTS books (
     author VARCHAR(255),
     category VARCHAR(100) NOT NULL,
     edition VARCHAR(50),
-    is_academic BOOLEAN DEFAULT FALSE
+    is_academic BOOLEAN DEFAULT FALSE,
+    sub_type VARCHAR(50)
 );
 
 -- جدول الإعلانات التجارية (عروض البيع والتبادل الخاصة بالمستخدمين)
@@ -51,7 +52,7 @@ CREATE TABLE IF NOT EXISTS listings (
     publisher_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     description TEXT,
     price NUMERIC(10, 2),
-    listing_type VARCHAR(50) DEFAULT 'for_sale',
+    listing_type VARCHAR(50) DEFAULT 'FOR_SALE',
     exchange_for TEXT,
     condition VARCHAR(50) DEFAULT 'good',
     cover_image TEXT,
@@ -458,3 +459,16 @@ CREATE TABLE IF NOT EXISTS blacklisted_tokens (
     token VARCHAR(500) PRIMARY KEY,
     expires_at TIMESTAMP NOT NULL
 );
+
+ALTER TABLE books ADD COLUMN IF NOT EXISTS sub_type VARCHAR(50);
+
+-- تحديث الكتب القديمة التي تم إضافتها قبل حل المشكلة (إعطاؤها قيمة افتراضية 'book')
+UPDATE books SET sub_type = 'book' WHERE category = 'general' AND sub_type IS NULL;
+
+-- =========================================================================
+-- 7. DATA MIGRATION FOR LISTING TYPES
+-- =========================================================================
+
+UPDATE listings SET listing_type = 'FOR_SALE' WHERE listing_type = 'for_sale' OR listing_type = 'sell';
+UPDATE listings SET listing_type = 'FOR_EXCHANGE' WHERE listing_type = 'exchange' OR listing_type = 'for_exchange';
+UPDATE listings SET listing_type = 'FOR_SALE_OR_EXCHANGE' WHERE listing_type = 'for_sale_and_exchange';

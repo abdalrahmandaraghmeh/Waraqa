@@ -12,13 +12,10 @@ data class ListingResponseDto(
     val price: BigDecimal? = null,
 
     @JsonProperty("listing_type")
-    val listingType: String = "for_sale",
+    val listingType: String = "FOR_SALE",
 
     @JsonProperty("exchange_for")
     val exchangeFor: String? = null,
-
-    @JsonProperty("is_exchange")
-    val isExchange: Boolean = false,
 
     val condition: String = "good",
     val category: String = "academic",

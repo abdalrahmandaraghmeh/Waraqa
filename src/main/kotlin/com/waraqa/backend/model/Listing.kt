@@ -21,7 +21,7 @@ data class Listing(
     val price: BigDecimal? = null,
 
     @Column("listing_type")
-    val listingType: String? = "for_sale",
+    val listingType: String? = "FOR_SALE",
 
     @Column("exchange_for")
     val exchangeFor: String? = null,

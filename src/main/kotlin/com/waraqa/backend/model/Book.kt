@@ -16,5 +16,8 @@ data class Book(
     @Column("is_academic")
     val isAcademic: Boolean = false,
 
+    @Column("sub_type")
+    val subType: String? = null,
+
     val edition: String? = null
 )

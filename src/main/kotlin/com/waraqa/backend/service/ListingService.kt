@@ -39,8 +39,8 @@ class ListingService(
 
         if (request.image.isNullOrBlank()) errors["image"] = "Book photo is required"
         if (request.title.isNullOrBlank()) errors["title"] = "Title is required"
-        if (request.listingType !in listOf("for_sale", "for_sale_and_exchange")) {
-            errors["listing_type"] = "Listing type must be 'for_sale' or 'for_sale_and_exchange'"
+        if (request.listingType !in com.waraqa.backend.model.ListingType.entries.map { it.name }) {
+            errors["listing_type"] = "Listing type must be 'FOR_SALE', 'FOR_EXCHANGE', or 'FOR_SALE_OR_EXCHANGE'"
         }
 
         when (request.category) {
@@ -57,14 +57,14 @@ class ListingService(
             else -> errors["category"] = "Category must be 'academic' or 'general'"
         }
 
-        if (request.listingType == "for_sale" && (request.price == null || request.price <= BigDecimal.ZERO)) {
+        if (request.listingType == "FOR_SALE" && (request.price == null || request.price <= BigDecimal.ZERO)) {
             errors["price"] = "Price is required and must be greater than zero"
-        } else if (request.listingType == "for_sale_and_exchange" && request.price != null && request.price < BigDecimal.ZERO) {
+        } else if (request.listingType == "FOR_SALE_OR_EXCHANGE" && request.price != null && request.price < BigDecimal.ZERO) {
             errors["price"] = "Price cannot be negative"
         }
 
-        if (request.listingType == "for_sale_and_exchange" && request.exchangeFor.isNullOrBlank()) {
-            errors["exchange_for"] = "Exchange details are required when 'For Sale & Exchange' is selected"
+        if (request.listingType in listOf("FOR_EXCHANGE", "FOR_SALE_OR_EXCHANGE") && request.exchangeFor.isNullOrBlank()) {
+            errors["exchange_for"] = "Exchange details are required for exchange listings"
         }
 
         if (request.condition !in listOf("new", "good", "fair")) {
@@ -84,7 +84,8 @@ class ListingService(
                     title = request.title.trim(),
                     author = request.author?.trim() ?: "",
                     category = request.category!!,
-                    isAcademic = (request.category == "academic")
+                    isAcademic = (request.category == "academic"),
+                    subType = if (request.category == "general") request.subType else null
                 )
                 bookRepository.save(newBook)
             }
@@ -100,7 +101,7 @@ class ListingService(
             description = request.description?.trim() ?: "",
             price = request.price,
             listingType = request.listingType,
-            exchangeFor = if (request.listingType == "for_sale_and_exchange") request.exchangeFor?.trim() else null,
+            exchangeFor = if (request.listingType in listOf("FOR_EXCHANGE", "FOR_SALE_OR_EXCHANGE")) request.exchangeFor?.trim() else null,
             condition = request.condition!!,
             coverImage = request.image!!.trim(),
             imagesUrl = allImages,
@@ -120,7 +121,6 @@ class ListingService(
             price = savedListing.price,
             listingType = savedListing.listingType!!,
             exchangeFor = savedListing.exchangeFor,
-            isExchange = savedListing.listingType == "for_sale_and_exchange",
             condition = savedListing.condition,
             category = book.category,
             subType = request.subType, // يمكن إضافتها لجدول الكتب لاحقاً إذا لزم الأمر
@@ -144,6 +144,7 @@ class ListingService(
         facultyId: Long?,
         majorId: Long?,
         subType: String?,
+        listingType: String?,
         sort: String?,
         page: Int,
         limit: Int
@@ -155,6 +156,7 @@ class ListingService(
             facultyId = facultyId,
             majorId = majorId,
             subType = subType,
+            listingType = listingType,
             sort = sort,
             offset = page * limit,
             limit = limit
@@ -224,15 +226,15 @@ class ListingService(
         // Validate editable fields
         val errors = mutableMapOf<String, String>()
 
-        if (request.listingType != null && request.listingType !in listOf("for_sale", "for_sale_and_exchange")) {
-            errors["listing_type"] = "Listing type must be 'for_sale' or 'for_sale_and_exchange'"
+        if (request.listingType != null && request.listingType !in com.waraqa.backend.model.ListingType.entries.map { it.name }) {
+            errors["listing_type"] = "Listing type must be 'FOR_SALE', 'FOR_EXCHANGE', or 'FOR_SALE_OR_EXCHANGE'"
         }
         if (request.condition != null && request.condition !in listOf("new", "good", "fair")) {
             errors["condition"] = "Condition must be 'new', 'good', or 'fair'"
         }
 
         val effectiveType = request.listingType ?: listing.listingType
-        if (effectiveType == "for_sale") {
+        if (effectiveType == "FOR_SALE") {
             val effectivePrice = request.price ?: listing.price
             if (effectivePrice == null || effectivePrice <= BigDecimal.ZERO) {
                 errors["price"] = "Price is required and must be greater than zero"

@@ -18,6 +18,7 @@ class BookRepository(private val jdbcTemplate: NamedParameterJdbcTemplate) {
             author = rs.getString("author") ?: "",
             category = rs.getString("category") ?: "general",
             isAcademic = rs.getBoolean("is_academic"),
+            subType = rs.getString("sub_type"),
             edition = rs.getString("edition")
         )
     }
@@ -28,12 +29,13 @@ class BookRepository(private val jdbcTemplate: NamedParameterJdbcTemplate) {
             .addValue("author", book.author)
             .addValue("category", book.category)
             .addValue("isAcademic", book.isAcademic)
+            .addValue("subType", book.subType)
             .addValue("edition", book.edition)
 
         if (book.id == null) {
             val sql = """
-                INSERT INTO books (title, author, category, is_academic, edition)
-                VALUES (:title, :author, :category, :isAcademic, :edition)
+                INSERT INTO books (title, author, category, is_academic, sub_type, edition)
+                VALUES (:title, :author, :category, :isAcademic, :subType, :edition)
             """.trimIndent()
             val keyHolder = GeneratedKeyHolder()
             jdbcTemplate.update(sql, params, keyHolder, arrayOf("id"))
@@ -43,7 +45,7 @@ class BookRepository(private val jdbcTemplate: NamedParameterJdbcTemplate) {
             val sql = """
                 UPDATE books SET
                     title = :title, author = :author, category = :category, 
-                    is_academic = :isAcademic, edition = :edition
+                    is_academic = :isAcademic, sub_type = :subType, edition = :edition
                 WHERE id = :id
             """.trimIndent()
             params.addValue("id", book.id)
@@ -76,7 +78,8 @@ class BookRepository(private val jdbcTemplate: NamedParameterJdbcTemplate) {
                 title = rs.getString("title"),
                 author = rs.getString("author"),
                 category = rs.getString("category"),
-                isAcademic = rs.getBoolean("is_academic")
+                isAcademic = rs.getBoolean("is_academic"),
+                subType = rs.getString("sub_type")
             )
         }
     }

@@ -62,6 +62,7 @@ class ListingController(
         @RequestParam(name = "faculty_id", required = false) facultyId: Long?,
         @RequestParam(name = "major_id", required = false) majorId: Long?,
         @RequestParam(name = "sub_type", required = false) subType: String?,
+        @RequestParam(name = "listing_type", required = false) listingType: String?,
         @RequestParam(name = "sort", defaultValue = "top_rated") sort: String?,
         @RequestParam(name = "page", defaultValue = "0") page: Int,
         @RequestParam(name = "limit", defaultValue = "20") limit: Int
@@ -73,6 +74,7 @@ class ListingController(
             facultyId = facultyId,
             majorId = majorId,
             subType = subType,
+            listingType = listingType,
             sort = sort,
             page = page,
             limit = limit
